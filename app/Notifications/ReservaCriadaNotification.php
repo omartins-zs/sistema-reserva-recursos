@@ -17,8 +17,6 @@ class ReservaCriadaNotification extends Notification implements ShouldQueue
     ) {}
 
     /**
-     * Get the notification's delivery channels.
-     *
      * @return array<int, string>
      */
     public function via(object $notifiable): array
@@ -26,32 +24,28 @@ class ReservaCriadaNotification extends Notification implements ShouldQueue
         return ['database', 'mail'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Reserva criada com sucesso')
-            ->greeting('Reserva confirmada')
-            ->line("O recurso {$this->reserva->recurso->nome} foi reservado com sucesso.")
+            ->subject('Solicitacao de reserva recebida')
+            ->greeting('Solicitacao enviada')
+            ->line("Recebemos sua solicitacao para o recurso {$this->reserva->recurso->nome}.")
             ->line("Data: {$this->reserva->data_formatada}")
-            ->line("Horário: {$this->reserva->periodo_formatado}")
+            ->line("Horario: {$this->reserva->periodo_formatado}")
             ->line("Motivo: {$this->reserva->motivo}")
-            ->action('Acessar painel', url('/admin'))
-            ->line('Você receberá novos avisos se houver qualquer alteração.');
+            ->line("Responsavel pela aprovacao: {$this->reserva->responsavel_aprovacao}")
+            ->action('Acompanhar solicitacoes', url('/admin/relatorios-reservas'))
+            ->line('Voce sera avisado assim que a solicitacao for aprovada ou reprovada.');
     }
 
     /**
-     * Get the array representation of the notification.
-     *
      * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array
     {
         return [
-            'titulo' => 'Reserva criada',
-            'mensagem' => "Reserva de {$this->reserva->recurso->nome} confirmada para {$this->reserva->data_formatada}.",
+            'titulo' => 'Solicitacao enviada',
+            'mensagem' => "Sua solicitacao de {$this->reserva->recurso->nome} esta pendente de aprovacao.",
             'reserva_id' => $this->reserva->id,
             'status' => $this->reserva->status->value,
         ];
