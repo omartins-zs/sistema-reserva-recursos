@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Actions\CreateReservaAction;
 use App\Models\Recurso;
 use App\Models\TipoRecurso;
+use App\Services\FluxoAprovacaoReservaService;
 use App\Services\ReservaDisponibilidadeService;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -51,7 +52,7 @@ class ReservaRecurso extends Component
 
     public ?bool $disponivel = null;
 
-    public string $mensagemDisponibilidade = 'Selecione um recurso e um período para verificar a disponibilidade.';
+    public string $mensagemDisponibilidade = 'Selecione um recurso e um periodo para verificar a disponibilidade.';
 
     public function mount(): void
     {
@@ -65,14 +66,14 @@ class ReservaRecurso extends Component
         $this->recursos = [];
         $this->agenda = [];
         $this->disponivel = null;
-        $this->mensagemDisponibilidade = 'Selecione um recurso e um período para verificar a disponibilidade.';
+        $this->mensagemDisponibilidade = 'Selecione um recurso e um periodo para verificar a disponibilidade.';
         $this->carregarRecursos();
     }
 
     public function updatedRecursoId(): void
     {
         $this->disponivel = null;
-        $this->mensagemDisponibilidade = 'Selecione um período para verificar a disponibilidade.';
+        $this->mensagemDisponibilidade = 'Selecione um periodo para verificar a disponibilidade.';
         $this->carregarAgenda();
     }
 
@@ -82,10 +83,10 @@ class ReservaRecurso extends Component
         $this->carregarAgenda();
     }
 
-    public function verificarDisponibilidade(ReservaDisponibilidadeService $service): void
+    public function verificarDisponibilidade(ReservaDisponibilidadeService $service, FluxoAprovacaoReservaService $fluxoAprovacao): void
     {
         $dados = $this->validate($this->availabilityRules(), $this->messages());
-        $recurso = Recurso::query()->findOrFail($dados['recursoId']);
+        $recurso = Recurso::query()->with('tipoRecurso')->findOrFail($dados['recursoId']);
 
         try {
             $service->validarRecursoReservavel($recurso);
@@ -97,19 +98,20 @@ class ReservaRecurso extends Component
             );
 
             $this->disponivel = true;
-            $this->mensagemDisponibilidade = 'Recurso disponível para o horário informado.';
-            $this->notify('success', 'Disponível', 'Recurso disponível para reserva.');
+            $responsavel = $fluxoAprovacao->responsavelPorTipo($recurso->tipoRecurso->nome);
+            $this->mensagemDisponibilidade = "Horario livre. A solicitacao seguira para aprovacao pela {$responsavel}.";
+            $this->notify('success', 'Horario disponivel', 'O recurso pode ser solicitado neste periodo.');
         } catch (ValidationException $exception) {
             $this->disponivel = false;
             $this->adicionarErrosAmigaveis($exception);
-            $this->mensagemDisponibilidade = collect($exception->errors())->flatten()->first() ?? 'Recurso indisponivel nesse horario.';
-            $this->notify('error', 'Indisponível', $this->mensagemDisponibilidade);
+            $this->mensagemDisponibilidade = collect($exception->errors())->flatten()->first() ?? 'Recurso indisponivel neste horario.';
+            $this->notify('error', 'Indisponivel', $this->mensagemDisponibilidade);
         } finally {
             $this->carregarAgenda();
         }
     }
 
-    public function reservar(CreateReservaAction $action): void
+    public function reservar(CreateReservaAction $action, FluxoAprovacaoReservaService $fluxoAprovacao): void
     {
         $dados = $this->validate($this->reservationRules(), $this->messages());
 
@@ -127,12 +129,19 @@ class ReservaRecurso extends Component
                 'observacoes' => $dados['observacoes'] ?: null,
             ]);
 
-            $this->notify('success', 'Reserva criada com sucesso', "Reserva confirmada para {$reserva->periodo_formatado}.");
+            $responsavel = $fluxoAprovacao->responsavelPorTipo($reserva->recurso->tipoRecurso->nome);
+
+            $this->notify(
+                'success',
+                'Solicitacao enviada',
+                "Pedido registrado com sucesso. A fila de aprovacao da {$responsavel} foi atualizada.",
+            );
+
             $this->limparFormulario();
             $this->dispatch('scroll-top');
         } catch (ValidationException $exception) {
             $this->adicionarErrosAmigaveis($exception);
-            $this->notify('error', 'Erro de validação', collect($exception->errors())->flatten()->first() ?? 'Revise os dados informados.');
+            $this->notify('error', 'Erro de validacao', collect($exception->errors())->flatten()->first() ?? 'Revise os dados informados.');
         }
     }
 
@@ -142,9 +151,14 @@ class ReservaRecurso extends Component
             ? Recurso::query()->with('tipoRecurso')->find($this->recursoId)
             : null;
 
+        $tipoNome = $recursoSelecionado instanceof Recurso
+            ? $recursoSelecionado->tipoRecurso->nome
+            : data_get(collect($this->tiposRecursos)->firstWhere('id', $this->tipoRecursoId), 'nome');
+
         return view('livewire.reserva-recurso', [
             'recursoSelecionado' => $recursoSelecionado,
             'hojeFormatado' => Carbon::parse($this->dataReserva)->translatedFormat('d \\d\\e F \\d\\e Y'),
+            'responsavelAprovacao' => app(FluxoAprovacaoReservaService::class)->responsavelPorTipo($tipoNome),
         ]);
     }
 
@@ -179,7 +193,7 @@ class ReservaRecurso extends Component
                     ->filter()
                     ->each(function (string $email) use ($fail): void {
                         if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                            $fail('Os participantes devem ser e-mails válidos separados por ponto e vírgula.');
+                            $fail('Os participantes devem ser e-mails validos separados por ponto e virgula.');
                         }
                     });
             }],
@@ -193,17 +207,17 @@ class ReservaRecurso extends Component
     private function messages(): array
     {
         return [
-            'tipoRecursoId.required' => 'O tipo de recurso é obrigatório.',
-            'recursoId.required' => 'O recurso é obrigatório.',
-            'dataReserva.required' => 'A data é obrigatória.',
-            'horaInicio.required' => 'A hora inicial é obrigatória.',
-            'horaFim.required' => 'A hora final é obrigatória.',
+            'tipoRecursoId.required' => 'O tipo de recurso e obrigatorio.',
+            'recursoId.required' => 'O recurso e obrigatorio.',
+            'dataReserva.required' => 'A data e obrigatoria.',
+            'horaInicio.required' => 'A hora inicial e obrigatoria.',
+            'horaFim.required' => 'A hora final e obrigatoria.',
             'horaFim.after' => 'A hora final deve ser maior que a hora inicial.',
-            'solicitanteNome.required' => 'O nome do solicitante é obrigatório.',
-            'solicitanteEmail.required' => 'O e-mail do solicitante é obrigatório.',
-            'solicitanteEmail.email' => 'Informe um e-mail válido.',
-            'departamento.required' => 'O departamento é obrigatório.',
-            'motivo.required' => 'O motivo da reserva é obrigatório.',
+            'solicitanteNome.required' => 'O nome do solicitante e obrigatorio.',
+            'solicitanteEmail.required' => 'O e-mail do solicitante e obrigatorio.',
+            'solicitanteEmail.email' => 'Informe um e-mail valido.',
+            'departamento.required' => 'O departamento e obrigatorio.',
+            'motivo.required' => 'O motivo da reserva e obrigatorio.',
         ];
     }
 
@@ -261,6 +275,7 @@ class ReservaRecurso extends Component
                 'departamento' => $reserva->departamento,
                 'status' => $reserva->status->value,
                 'status_label' => $reserva->status->label(),
+                'avaliado_por' => $reserva->avaliadoPor?->name,
             ])
             ->all();
     }
@@ -284,7 +299,7 @@ class ReservaRecurso extends Component
         ]);
 
         $this->dataReserva = now()->toDateString();
-        $this->mensagemDisponibilidade = 'Selecione um recurso e um período para verificar a disponibilidade.';
+        $this->mensagemDisponibilidade = 'Selecione um recurso e um periodo para verificar a disponibilidade.';
         $this->carregarTiposRecursos();
     }
 
