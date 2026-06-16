@@ -1,9 +1,59 @@
 @import 'tailwindcss';
 
+@source '../views/**/*.blade.php';
+@source '../../app/Livewire/**/*.php';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Aptos', 'Segoe UI Variable', 'Trebuchet MS', sans-serif;
+    --color-brand-50: #f4f8fb;
+    --color-brand-100: #dbe8f3;
+    --color-brand-500: #0f4c81;
+    --color-brand-600: #0b3c66;
+    --color-brand-700: #082a47;
+    --color-ink-900: #142033;
+}
+
+@layer base {
+    body {
+        @apply bg-slate-100 text-slate-900 antialiased;
+    }
+}
+
+@layer components {
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(18px);
+        border: 1px solid rgba(15, 76, 129, 0.08);
+        box-shadow: 0 24px 70px -40px rgba(15, 76, 129, 0.45);
+    }
+
+    .soft-grid {
+        background-image:
+            linear-gradient(rgba(15, 76, 129, 0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(15, 76, 129, 0.06) 1px, transparent 1px);
+        background-size: 28px 28px;
+    }
+
+    .hero-orb {
+        position: absolute;
+        border-radius: 9999px;
+        filter: blur(6px);
+        opacity: 0.58;
+        animation: drift 14s ease-in-out infinite;
+    }
+
+    .status-badge {
+        @apply inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold tracking-wide;
+    }
+}
+
+@keyframes drift {
+    0%, 100% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+        transform: translate3d(10px, -18px, 0) scale(1.04);
+    }
 }
