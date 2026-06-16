@@ -17,8 +17,6 @@ class ReservaProximaNotification extends Notification implements ShouldQueue
     ) {}
 
     /**
-     * Get the notification's delivery channels.
-     *
      * @return array<int, string>
      */
     public function via(object $notifiable): array
@@ -26,31 +24,26 @@ class ReservaProximaNotification extends Notification implements ShouldQueue
         return ['database', 'mail'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Sua reserva começa em breve')
+            ->subject('Sua reserva comeca em breve')
             ->greeting('Lembrete de reserva')
-            ->line("Sua reserva de {$this->reserva->recurso->nome} começa em breve.")
+            ->line("Sua reserva de {$this->reserva->recurso->nome} comeca em breve.")
             ->line("Data: {$this->reserva->data_formatada}")
-            ->line("Horário: {$this->reserva->periodo_formatado}")
+            ->line("Horario: {$this->reserva->periodo_formatado}")
             ->action('Abrir painel', url('/admin'))
             ->line('Chegue alguns minutos antes para garantir o uso do recurso.');
     }
 
     /**
-     * Get the array representation of the notification.
-     *
      * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array
     {
         return [
-            'titulo' => 'Reserva próxima do horário',
-            'mensagem' => "Sua reserva de {$this->reserva->recurso->nome} começa em breve.",
+            'titulo' => 'Reserva proxima do horario',
+            'mensagem' => "Sua reserva de {$this->reserva->recurso->nome} comeca em breve.",
             'reserva_id' => $this->reserva->id,
         ];
     }
