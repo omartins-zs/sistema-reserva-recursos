@@ -19,7 +19,7 @@ class RejectReservaAction
 
     public function execute(Reserva $reserva, User $usuario, string $motivo): Reserva
     {
-        $reserva->loadMissing('recurso.tipoRecurso');
+        $reserva->loadMissing(['recurso.tipoRecurso', 'departamentoRelacionamento']);
         $motivo = trim($motivo);
 
         if ($motivo === '') {
@@ -49,7 +49,7 @@ class RejectReservaAction
             ])->save();
         });
 
-        $reserva->refresh()->load(['recurso.tipoRecurso', 'avaliadoPor']);
+        $reserva->refresh()->load(['recurso.tipoRecurso', 'departamentoRelacionamento', 'avaliadoPor']);
 
         $notification = new ReservaRejeitadaNotification($reserva);
 
