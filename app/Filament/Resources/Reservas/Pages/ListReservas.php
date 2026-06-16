@@ -38,7 +38,7 @@ class ListReservas extends ListRecords
 
     public function getDefaultActiveTab(): string|int|null
     {
-        return (auth()->user()?->role?->canApproveReservations() ?? false) ? 'pendentes' : 'todas';
+        return auth()->user()?->canApproveReservations() ? 'pendentes' : 'todas';
     }
 
     protected function getHeaderWidgets(): array
