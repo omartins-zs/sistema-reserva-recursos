@@ -41,7 +41,7 @@ class ReservasExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMap
             'Recurso',
             'Tipo',
             'Data',
-            'Horário',
+            'Horario',
             'Solicitante',
             'E-mail',
             'Departamento',
