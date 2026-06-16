@@ -32,6 +32,7 @@ class ReservaPendenteAprovacaoNotification extends Notification implements Shoul
             ->line("O recurso {$this->reserva->recurso->nome} recebeu uma nova solicitacao.")
             ->line("Solicitante: {$this->reserva->solicitante_nome}")
             ->line("Departamento: {$this->reserva->departamento}")
+            ->line("Responsavel principal: {$this->reserva->responsavel_aprovacao}")
             ->line("Data: {$this->reserva->data_formatada}")
             ->line("Horario: {$this->reserva->periodo_formatado}")
             ->action('Abrir fila de aprovacoes', url('/admin/reservas'))
