@@ -39,6 +39,11 @@ enum UserRole: string
         return in_array($this, [self::ADMINISTRADOR, self::TI, self::FACILITIES], true);
     }
 
+    public function canApproveReservations(): bool
+    {
+        return in_array($this, [self::ADMINISTRADOR, self::TI, self::FACILITIES], true);
+    }
+
     public function canViewReports(): bool
     {
         return true;
