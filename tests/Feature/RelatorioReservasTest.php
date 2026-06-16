@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\UserRole;
 use App\Livewire\RelatorioReservas;
+use App\Models\Departamento;
 use App\Models\Recurso;
 use App\Models\Reserva;
 use App\Models\TipoRecurso;
@@ -25,12 +26,15 @@ class RelatorioReservasTest extends TestCase
             'role' => UserRole::COLABORADOR,
         ]);
 
+        $departamento = Departamento::factory()->create(['nome' => 'Comercial']);
         $tipo = TipoRecurso::factory()->create(['nome' => 'Sala']);
         $recurso = Recurso::factory()->create(['tipo_recurso_id' => $tipo->id]);
 
         Reserva::factory()->create([
             'recurso_id' => $recurso->id,
             'solicitante_email' => 'colaborador@empresa.com',
+            'departamento_id' => $departamento->id,
+            'departamento' => $departamento->nome,
             'data_reserva' => '2026-06-20',
             'hora_inicio' => '09:00:00',
             'hora_fim' => '10:00:00',
@@ -40,6 +44,8 @@ class RelatorioReservasTest extends TestCase
         Reserva::factory()->create([
             'recurso_id' => $recurso->id,
             'solicitante_email' => 'outro@empresa.com',
+            'departamento_id' => $departamento->id,
+            'departamento' => $departamento->nome,
             'data_reserva' => '2026-06-20',
             'hora_inicio' => '11:00:00',
             'hora_fim' => '12:00:00',
@@ -59,11 +65,14 @@ class RelatorioReservasTest extends TestCase
             'role' => UserRole::COLABORADOR,
         ]);
 
+        $departamento = Departamento::factory()->create(['nome' => 'Operacoes']);
         $tipo = TipoRecurso::factory()->create(['nome' => 'Notebook']);
         $recurso = Recurso::factory()->create(['tipo_recurso_id' => $tipo->id]);
         $reserva = Reserva::factory()->create([
             'recurso_id' => $recurso->id,
             'solicitante_email' => 'colaborador@empresa.com',
+            'departamento_id' => $departamento->id,
+            'departamento' => $departamento->nome,
             'status' => 'confirmado',
         ]);
 
@@ -81,10 +90,12 @@ class RelatorioReservasTest extends TestCase
     {
         Notification::fake();
 
-        $gestorTi = User::factory()->create([
-            'email' => 'gestor-ti@empresa.com',
-            'role' => UserRole::TI,
+        $departamento = Departamento::factory()->create(['nome' => 'Financeiro']);
+        $gestorFinanceiro = User::factory()->create([
+            'email' => 'gestor.financeiro@empresa.com',
+            'role' => UserRole::COLABORADOR,
         ]);
+        $departamento->update(['gestor_user_id' => $gestorFinanceiro->id]);
 
         $tipo = TipoRecurso::factory()->create(['nome' => 'Notebook']);
         $recurso = Recurso::factory()->create([
@@ -96,20 +107,22 @@ class RelatorioReservasTest extends TestCase
         $reserva = Reserva::factory()->create([
             'recurso_id' => $recurso->id,
             'solicitante_email' => 'solicitante@empresa.com',
+            'departamento_id' => $departamento->id,
+            'departamento' => $departamento->nome,
             'status' => 'pendente_aprovacao',
             'data_reserva' => '2026-06-25',
             'hora_inicio' => '13:00:00',
             'hora_fim' => '15:00:00',
         ]);
 
-        Livewire::actingAs($gestorTi)
+        Livewire::actingAs($gestorFinanceiro)
             ->test(RelatorioReservas::class)
             ->call('aprovarReserva', $reserva->id);
 
         $this->assertDatabaseHas('reservas', [
             'id' => $reserva->id,
             'status' => 'confirmado',
-            'avaliado_por_id' => $gestorTi->id,
+            'avaliado_por_id' => $gestorFinanceiro->id,
         ]);
 
         Notification::assertSentOnDemand(ReservaAprovadaNotification::class);
