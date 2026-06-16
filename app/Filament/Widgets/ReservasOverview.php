@@ -23,7 +23,7 @@ class ReservasOverview extends StatsOverviewWidget
             'data_final' => now()->endOfMonth()->toDateString(),
         ], $usuario);
 
-        $labelPendente = ($usuario?->role?->canApproveReservations() ?? false)
+        $labelPendente = $usuario?->canApproveReservations()
             ? 'Aguardando sua analise'
             : 'Pendentes no periodo';
 
