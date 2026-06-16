@@ -7,6 +7,7 @@ use App\Actions\CancelReservaAction;
 use App\Actions\RejectReservaAction;
 use App\Enums\UserRole;
 use App\Exports\ReservasExport;
+use App\Models\Departamento;
 use App\Models\Recurso;
 use App\Models\Reserva;
 use App\Models\TipoRecurso;
@@ -26,9 +27,9 @@ class RelatorioReservas extends Component
 
     public ?int $recursoId = null;
 
-    public string $solicitante = '';
+    public ?int $departamentoId = null;
 
-    public string $departamento = '';
+    public string $solicitante = '';
 
     public string $dataInicial = '';
 
@@ -46,12 +47,18 @@ class RelatorioReservas extends Component
      */
     public array $recursos = [];
 
+    /**
+     * @var array<int, array<string, mixed>>
+     */
+    public array $departamentos = [];
+
     public function mount(): void
     {
         $this->dataInicial = now()->startOfMonth()->toDateString();
         $this->dataFinal = now()->endOfMonth()->toDateString();
         $this->carregarTiposRecursos();
         $this->carregarRecursos();
+        $this->carregarDepartamentos();
     }
 
     public function updatedTipoRecursoId(): void
@@ -63,7 +70,7 @@ class RelatorioReservas extends Component
 
     public function updated(string $property): void
     {
-        if (in_array($property, ['recursoId', 'solicitante', 'departamento', 'dataInicial', 'dataFinal', 'status'], true)) {
+        if (in_array($property, ['recursoId', 'departamentoId', 'solicitante', 'dataInicial', 'dataFinal', 'status'], true)) {
             $this->resetPage();
         }
     }
@@ -92,7 +99,7 @@ class RelatorioReservas extends Component
 
     public function aprovarReserva(int $reservaId): void
     {
-        $reserva = Reserva::query()->with('recurso.tipoRecurso')->findOrFail($reservaId);
+        $reserva = Reserva::query()->with(['recurso.tipoRecurso', 'departamentoRelacionamento'])->findOrFail($reservaId);
         $this->authorize('approve', $reserva);
 
         app(ApproveReservaAction::class)->execute($reserva, auth()->user());
@@ -103,7 +110,7 @@ class RelatorioReservas extends Component
 
     public function reprovarReserva(int $reservaId, string $motivo): void
     {
-        $reserva = Reserva::query()->with('recurso.tipoRecurso')->findOrFail($reservaId);
+        $reserva = Reserva::query()->with(['recurso.tipoRecurso', 'departamentoRelacionamento'])->findOrFail($reservaId);
         $this->authorize('reject', $reserva);
 
         app(RejectReservaAction::class)->execute($reserva, auth()->user(), $motivo);
@@ -114,7 +121,7 @@ class RelatorioReservas extends Component
 
     public function cancelarReserva(int $reservaId): void
     {
-        $reserva = Reserva::query()->with('recurso.tipoRecurso')->findOrFail($reservaId);
+        $reserva = Reserva::query()->with(['recurso.tipoRecurso', 'departamentoRelacionamento'])->findOrFail($reservaId);
         $this->authorize('delete', $reserva);
 
         app(CancelReservaAction::class)->execute($reserva, auth()->user());
@@ -139,7 +146,6 @@ class RelatorioReservas extends Component
             'metricas' => $metricas,
             'reservas' => $reservas,
             'podeExportar' => $this->podeExportar(),
-            'podeAprovar' => auth()->user()?->role?->canApproveReservations() ?? false,
         ]);
     }
 
@@ -151,8 +157,8 @@ class RelatorioReservas extends Component
         return [
             'tipo_recurso_id' => $this->tipoRecursoId,
             'recurso_id' => $this->recursoId,
+            'departamento_id' => $this->departamentoId,
             'solicitante' => $this->solicitante,
-            'departamento' => $this->departamento,
             'data_inicial' => $this->dataInicial,
             'data_final' => $this->dataFinal,
             'status' => $this->status,
@@ -171,22 +177,10 @@ class RelatorioReservas extends Component
 
     private function carregarRecursos(): void
     {
-        $usuario = auth()->user();
-
         $query = Recurso::query()
             ->with('tipoRecurso')
             ->where('ativo', true)
             ->when($this->tipoRecursoId, fn ($query) => $query->where('tipo_recurso_id', $this->tipoRecursoId));
-
-        if ($usuario && $usuario->role !== UserRole::ADMINISTRADOR && $usuario->role !== UserRole::RH) {
-            if ($usuario->role === UserRole::COLABORADOR) {
-                $this->recursos = [];
-
-                return;
-            }
-
-            $query->whereHas('tipoRecurso', fn ($tipoQuery) => $tipoQuery->whereIn('nome', $usuario->role->allowedResourceTypes()));
-        }
 
         $this->recursos = $query
             ->orderBy('nome')
@@ -198,8 +192,23 @@ class RelatorioReservas extends Component
             ->all();
     }
 
+    private function carregarDepartamentos(): void
+    {
+        $this->departamentos = Departamento::ativosEmCache()
+            ->map(fn (Departamento $departamento): array => [
+                'id' => $departamento->id,
+                'nome' => $departamento->nome,
+            ])
+            ->all();
+    }
+
     private function podeExportar(): bool
     {
-        return auth()->user()?->role !== UserRole::COLABORADOR;
+        $usuario = auth()->user();
+
+        return auth()->check() && (
+            $usuario->role !== UserRole::COLABORADOR
+            || $usuario->canApproveReservations()
+        );
     }
 }
