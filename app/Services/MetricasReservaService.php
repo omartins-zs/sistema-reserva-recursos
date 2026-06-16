@@ -79,13 +79,13 @@ class MetricasReservaService
     public function queryBase(array $filtros, ?User $usuario = null): Builder
     {
         $query = Reserva::query()
-            ->with(['recurso.tipoRecurso', 'avaliadoPor'])
+            ->with(['recurso.tipoRecurso', 'avaliadoPor', 'departamentoRelacionamento.gestor'])
             ->when($filtros['tipo_recurso_id'] ?? null, function (Builder $query, mixed $tipoId): void {
                 $query->whereHas('recurso', fn (Builder $resourceQuery) => $resourceQuery->where('tipo_recurso_id', $tipoId));
             })
             ->when($filtros['recurso_id'] ?? null, fn (Builder $query, mixed $recursoId) => $query->where('recurso_id', $recursoId))
             ->when($filtros['solicitante'] ?? null, fn (Builder $query, mixed $solicitante) => $query->where('solicitante_nome', 'like', '%'.trim((string) $solicitante).'%'))
-            ->when($filtros['departamento'] ?? null, fn (Builder $query, mixed $departamento) => $query->where('departamento', 'like', '%'.trim((string) $departamento).'%'))
+            ->when($filtros['departamento_id'] ?? null, fn (Builder $query, mixed $departamentoId) => $query->where('departamento_id', $departamentoId))
             ->when($filtros['data_inicial'] ?? null, fn (Builder $query, mixed $data) => $query->whereDate('data_reserva', '>=', $data))
             ->when($filtros['data_final'] ?? null, fn (Builder $query, mixed $data) => $query->whereDate('data_reserva', '<=', $data))
             ->when($filtros['status'] ?? null, fn (Builder $query, mixed $status) => $query->where('status', $status));
@@ -94,13 +94,15 @@ class MetricasReservaService
             return $query;
         }
 
-        if ($usuario->hasRole(UserRole::COLABORADOR)) {
-            return $query->where('solicitante_email', $usuario->email);
+        if ($usuario->canApproveReservations()) {
+            return $query->where(function (Builder $builder) use ($usuario): void {
+                $builder
+                    ->whereIn('departamento_id', $usuario->departamentosGerenciadosIds())
+                    ->orWhere('solicitante_email', $usuario->email);
+            });
         }
 
-        return $query->whereHas('recurso.tipoRecurso', function (Builder $tipoQuery) use ($usuario): void {
-            $tipoQuery->whereIn('nome', $usuario->role->allowedResourceTypes());
-        });
+        return $query->where('solicitante_email', $usuario->email);
     }
 
     /**
