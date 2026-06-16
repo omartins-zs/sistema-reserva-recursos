@@ -11,14 +11,16 @@ class RelatoriosReservas extends Page
 
     protected static ?string $navigationLabel = 'Relatorios';
 
-    protected static ?string $title = 'Relatorios de Reservas';
+    protected static ?string $title = 'Central de relatorios';
 
     protected static ?string $slug = 'relatorios-reservas';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Operacao e aprovacao';
 
     protected string $view = 'filament.pages.relatorios-reservas';
 
     public static function canAccess(): bool
     {
-        return auth()->check();
+        return auth()->user()?->role?->canViewReports() ?? false;
     }
 }
