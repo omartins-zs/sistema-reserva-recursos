@@ -16,7 +16,7 @@ class ExampleTest extends TestCase
     /**
      * A basic test example.
      */
-    public function test_the_overlap_rule_detects_conflicts_correctly(): void
+    public function test_the_overlap_rule_detects_conflicts_for_pending_and_confirmed_requests(): void
     {
         $tipo = TipoRecurso::factory()->create(['nome' => 'Sala']);
         $recurso = Recurso::factory()->create([
@@ -30,7 +30,7 @@ class ExampleTest extends TestCase
             'data_reserva' => '2026-06-20',
             'hora_inicio' => '09:00:00',
             'hora_fim' => '10:00:00',
-            'status' => 'confirmado',
+            'status' => 'pendente_aprovacao',
         ]);
 
         $service = app(ReservaDisponibilidadeService::class);
