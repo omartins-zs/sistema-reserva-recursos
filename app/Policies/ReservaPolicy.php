@@ -20,16 +20,16 @@ class ReservaPolicy
             return true;
         }
 
-        if ($user->hasRole(UserRole::COLABORADOR)) {
-            return $user->email === $reserva->solicitante_email;
+        if ($user->gerenciaDepartamento($reserva->departamento_id)) {
+            return true;
         }
 
-        return $user->canManageResourceType($reserva->recurso->tipoRecurso->nome);
+        return $user->email === $reserva->solicitante_email;
     }
 
     public function create(User $user): bool
     {
-        return $user->hasRole(UserRole::ADMINISTRADOR, UserRole::TI, UserRole::FACILITIES);
+        return $user->isAdmin() || $user->gerenciaDepartamento($user->departamento_id);
     }
 
     public function update(User $user, Reserva $reserva): bool
@@ -43,22 +43,18 @@ class ReservaPolicy
 
     public function delete(User $user, Reserva $reserva): bool
     {
-        if ($user->isAdmin() || $user->hasRole(UserRole::RH)) {
+        if ($user->isAdmin() || $user->hasRole(UserRole::RH) || $user->gerenciaDepartamento($reserva->departamento_id)) {
             return true;
         }
 
-        if ($user->hasRole(UserRole::COLABORADOR)) {
-            return $user->email === $reserva->solicitante_email
-                && in_array($reserva->status, [ReservaStatus::PENDENTE_APROVACAO, ReservaStatus::CONFIRMADO], true);
-        }
-
-        return $user->canManageResourceType($reserva->recurso->tipoRecurso->nome);
+        return $user->email === $reserva->solicitante_email
+            && in_array($reserva->status, [ReservaStatus::PENDENTE_APROVACAO, ReservaStatus::CONFIRMADO], true);
     }
 
     public function approve(User $user, Reserva $reserva): bool
     {
         return $reserva->status === ReservaStatus::PENDENTE_APROVACAO
-            && $user->canApproveResourceType($reserva->recurso->tipoRecurso->nome);
+            && ($user->isAdmin() || $user->gerenciaDepartamento($reserva->departamento_id));
     }
 
     public function reject(User $user, Reserva $reserva): bool
