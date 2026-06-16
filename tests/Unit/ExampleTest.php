@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Models\Departamento;
 use App\Models\Recurso;
 use App\Models\Reserva;
 use App\Models\TipoRecurso;
@@ -18,6 +19,7 @@ class ExampleTest extends TestCase
      */
     public function test_the_overlap_rule_detects_conflicts_for_pending_and_confirmed_requests(): void
     {
+        $departamento = Departamento::factory()->create(['nome' => 'RH']);
         $tipo = TipoRecurso::factory()->create(['nome' => 'Sala']);
         $recurso = Recurso::factory()->create([
             'tipo_recurso_id' => $tipo->id,
@@ -27,6 +29,8 @@ class ExampleTest extends TestCase
 
         Reserva::factory()->create([
             'recurso_id' => $recurso->id,
+            'departamento_id' => $departamento->id,
+            'departamento' => $departamento->nome,
             'data_reserva' => '2026-06-20',
             'hora_inicio' => '09:00:00',
             'hora_fim' => '10:00:00',
