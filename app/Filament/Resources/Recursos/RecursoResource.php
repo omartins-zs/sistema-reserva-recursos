@@ -20,6 +20,10 @@ class RecursoResource extends Resource
 {
     protected static ?string $model = Recurso::class;
 
+    protected static ?string $modelLabel = 'recurso';
+
+    protected static ?string $pluralModelLabel = 'recursos';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWrenchScrewdriver;
 
     protected static ?string $navigationLabel = 'Recursos';
