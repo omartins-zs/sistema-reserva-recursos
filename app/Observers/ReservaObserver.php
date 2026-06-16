@@ -8,30 +8,32 @@ use App\Models\Reserva;
 
 class ReservaObserver
 {
-    /**
-     * Handle the Reserva "created" event.
-     */
     public function created(Reserva $reserva): void
     {
         HistoricoReserva::query()->create([
             'reserva_id' => $reserva->id,
-            'acao' => 'criada',
-            'descricao' => "Reserva criada para {$reserva->data_formatada}, {$reserva->periodo_formatado}.",
+            'acao' => 'solicitada',
+            'descricao' => "Solicitacao criada para {$reserva->data_formatada}, {$reserva->periodo_formatado}.",
             'usuario_id' => auth()->id(),
         ]);
     }
 
-    /**
-     * Handle the Reserva "updated" event.
-     */
     public function updated(Reserva $reserva): void
     {
-        if ($reserva->wasChanged('status') && $reserva->status === ReservaStatus::CANCELADO) {
+        if ($reserva->wasChanged('status')) {
+            $descricao = match ($reserva->status) {
+                ReservaStatus::PENDENTE_APROVACAO => 'Solicitacao retornou para pendencia.',
+                ReservaStatus::CONFIRMADO => 'Solicitacao aprovada e reserva confirmada.',
+                ReservaStatus::REJEITADO => 'Solicitacao reprovada.',
+                ReservaStatus::CANCELADO => 'Reserva cancelada.',
+                ReservaStatus::FINALIZADO => 'Reserva finalizada.',
+            };
+
             HistoricoReserva::query()->create([
                 'reserva_id' => $reserva->id,
-                'acao' => 'cancelada',
-                'descricao' => 'Reserva cancelada.',
-                'usuario_id' => auth()->id(),
+                'acao' => $reserva->status->value,
+                'descricao' => $descricao,
+                'usuario_id' => auth()->id() ?? $reserva->avaliado_por_id,
             ]);
 
             return;
@@ -45,29 +47,5 @@ class ReservaObserver
                 'usuario_id' => auth()->id(),
             ]);
         }
-    }
-
-    /**
-     * Handle the Reserva "deleted" event.
-     */
-    public function deleted(Reserva $reserva): void
-    {
-        //
-    }
-
-    /**
-     * Handle the Reserva "restored" event.
-     */
-    public function restored(Reserva $reserva): void
-    {
-        //
-    }
-
-    /**
-     * Handle the Reserva "force deleted" event.
-     */
-    public function forceDeleted(Reserva $reserva): void
-    {
-        //
     }
 }
