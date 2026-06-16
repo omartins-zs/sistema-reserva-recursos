@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\ReservaStatus;
+use App\Models\Departamento;
 use App\Models\Recurso;
 use App\Models\Reserva;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -25,6 +26,7 @@ class ReservaFactory extends Factory
             'recurso_id' => Recurso::factory(),
             'solicitante_nome' => fake()->name(),
             'solicitante_email' => fake()->safeEmail(),
+            'departamento_id' => Departamento::factory(),
             'departamento' => fake()->randomElement(['RH', 'Comercial', 'TI', 'Facilities']),
             'motivo' => fake()->sentence(),
             'participantes' => fake()->safeEmail().'; '.fake()->safeEmail(),
