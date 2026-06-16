@@ -2,7 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Actions\ApproveReservaAction;
 use App\Actions\CancelReservaAction;
+use App\Actions\RejectReservaAction;
 use App\Enums\UserRole;
 use App\Exports\ReservasExport;
 use App\Models\Recurso;
@@ -88,6 +90,28 @@ class RelatorioReservas extends Component
         );
     }
 
+    public function aprovarReserva(int $reservaId): void
+    {
+        $reserva = Reserva::query()->with('recurso.tipoRecurso')->findOrFail($reservaId);
+        $this->authorize('approve', $reserva);
+
+        app(ApproveReservaAction::class)->execute($reserva, auth()->user());
+
+        $this->dispatch('notify', type: 'success', title: 'Solicitacao aprovada', text: 'A reserva foi confirmada e o solicitante foi avisado.');
+        $this->resetPage();
+    }
+
+    public function reprovarReserva(int $reservaId, string $motivo): void
+    {
+        $reserva = Reserva::query()->with('recurso.tipoRecurso')->findOrFail($reservaId);
+        $this->authorize('reject', $reserva);
+
+        app(RejectReservaAction::class)->execute($reserva, auth()->user(), $motivo);
+
+        $this->dispatch('notify', type: 'success', title: 'Solicitacao reprovada', text: 'A resposta foi registrada e o solicitante foi avisado.');
+        $this->resetPage();
+    }
+
     public function cancelarReserva(int $reservaId): void
     {
         $reserva = Reserva::query()->with('recurso.tipoRecurso')->findOrFail($reservaId);
@@ -95,7 +119,7 @@ class RelatorioReservas extends Component
 
         app(CancelReservaAction::class)->execute($reserva, auth()->user());
 
-        $this->dispatch('notify', type: 'success', title: 'Reserva cancelada com sucesso', text: 'A agenda e o relatório foram atualizados.');
+        $this->dispatch('notify', type: 'success', title: 'Reserva cancelada', text: 'A agenda e o relatorio foram atualizados.');
         $this->resetPage();
     }
 
@@ -115,6 +139,7 @@ class RelatorioReservas extends Component
             'metricas' => $metricas,
             'reservas' => $reservas,
             'podeExportar' => $this->podeExportar(),
+            'podeAprovar' => auth()->user()?->role?->canApproveReservations() ?? false,
         ]);
     }
 
