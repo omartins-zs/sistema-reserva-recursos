@@ -50,7 +50,7 @@ class ReservaResource extends Resource
     {
         $user = auth()->user();
 
-        if (! ($user?->role?->canApproveReservations() ?? false)) {
+        if (! $user?->canApproveReservations()) {
             return null;
         }
 
@@ -68,18 +68,22 @@ class ReservaResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery()->with(['recurso.tipoRecurso', 'avaliadoPor']);
+        $query = parent::getEloquentQuery()->with(['recurso.tipoRecurso', 'avaliadoPor', 'departamentoRelacionamento.gestor']);
         $user = auth()->user();
 
         if (! $user || $user->isAdmin() || $user->hasRole(UserRole::RH)) {
             return $query;
         }
 
-        if ($user->hasRole(UserRole::COLABORADOR)) {
-            return $query->where('solicitante_email', $user->email);
+        if ($user->canApproveReservations()) {
+            return $query->where(function (Builder $builder) use ($user): void {
+                $builder
+                    ->whereIn('departamento_id', $user->departamentosGerenciadosIds())
+                    ->orWhere('solicitante_email', $user->email);
+            });
         }
 
-        return $query->whereHas('recurso.tipoRecurso', fn (Builder $tipoQuery) => $tipoQuery->whereIn('nome', $user->role->allowedResourceTypes()));
+        return $query->where('solicitante_email', $user->email);
     }
 
     public static function getPages(): array
