@@ -48,7 +48,12 @@
 
             <div>
                 <label class="mb-2 block text-sm font-medium text-slate-700">Departamento</label>
-                <input wire:model.live.debounce.400ms="departamento" type="text" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100" placeholder="Buscar por departamento">
+                <select wire:model.live="departamentoId" class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+                    <option value="">Todos</option>
+                    @foreach ($departamentos as $departamento)
+                        <option value="{{ $departamento['id'] }}">{{ $departamento['nome'] }}</option>
+                    @endforeach
+                </select>
             </div>
 
             <div>
