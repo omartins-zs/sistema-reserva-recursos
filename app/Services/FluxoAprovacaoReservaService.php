@@ -2,48 +2,54 @@
 
 namespace App\Services;
 
-use App\Enums\UserRole;
-use App\Models\Recurso;
+use App\Models\Departamento;
 use App\Models\Reserva;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 
 class FluxoAprovacaoReservaService
 {
-    /**
-     * @return list<UserRole>
-     */
-    public function perfisAprovadoresPorTipo(?string $tipoNome): array
+    public function responsavelPorDepartamento(?Departamento $departamento): string
     {
-        return match ($tipoNome) {
-            'Notebook', 'Projetor' => [UserRole::ADMINISTRADOR, UserRole::TI],
-            'Sala', 'Carro' => [UserRole::ADMINISTRADOR, UserRole::FACILITIES],
-            default => [UserRole::ADMINISTRADOR],
-        };
+        if (! $departamento instanceof Departamento) {
+            return 'Gestor do departamento ou Administracao';
+        }
+
+        if ($departamento->gestor instanceof User) {
+            return "{$departamento->gestor->name} ({$departamento->nome})";
+        }
+
+        return "Gestor de {$departamento->nome} ou Administracao";
     }
 
-    public function responsavelPorTipo(?string $tipoNome): string
+    public function responsavelPorReserva(Reserva $reserva): string
     {
-        return match ($tipoNome) {
-            'Notebook', 'Projetor' => 'Coordenacao de TI',
-            'Sala', 'Carro' => 'Coordenacao de Facilities',
-            default => 'Administracao',
-        };
+        $reserva->loadMissing('departamentoRelacionamento.gestor');
+
+        return $this->responsavelPorDepartamento($reserva->departamentoRelacionamento);
     }
 
     /**
      * @return Collection<int, User>
      */
-    public function usuariosAprovadores(Recurso $recurso): Collection
+    public function usuariosAprovadores(Reserva $reserva): Collection
     {
-        $roles = collect($this->perfisAprovadoresPorTipo($recurso->tipoRecurso->nome))
-            ->map(fn (UserRole $role): string => $role->value)
-            ->all();
+        $reserva->loadMissing('departamentoRelacionamento.gestor');
 
-        return User::query()
-            ->whereIn('role', $roles)
-            ->orderBy('name')
-            ->get();
+        $query = User::query()
+            ->where(function ($query) use ($reserva): void {
+                $query->where('role', 'administrador');
+
+                if ($reserva->departamentoRelacionamento?->gestor_user_id) {
+                    $query->orWhere('id', $reserva->departamentoRelacionamento->gestor_user_id);
+                }
+            })
+            ->orderBy('name');
+
+        /** @var Collection<int, User> $usuarios */
+        $usuarios = $query->get();
+
+        return $usuarios;
     }
 
     public function usuarioPodeAprovar(?User $usuario, Reserva $reserva): bool
@@ -56,6 +62,6 @@ class FluxoAprovacaoReservaService
             return true;
         }
 
-        return $usuario->canApproveResourceType($reserva->recurso->tipoRecurso->nome);
+        return $usuario->gerenciaDepartamento($reserva->departamento_id);
     }
 }
