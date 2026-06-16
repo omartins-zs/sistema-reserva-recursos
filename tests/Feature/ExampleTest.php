@@ -18,6 +18,6 @@ class ExampleTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Reserva de recursos corporativos');
+            ->assertSee('Reserva corporativa com aprovacao');
     }
 }
