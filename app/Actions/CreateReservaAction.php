@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Enums\ReservaStatus;
+use App\Models\Departamento;
 use App\Models\Recurso;
 use App\Models\Reserva;
 use App\Models\User;
@@ -27,6 +28,7 @@ class CreateReservaAction
     public function execute(array $data, ?User $usuario = null): Reserva
     {
         $recurso = Recurso::query()->with('tipoRecurso')->findOrFail($data['recurso_id']);
+        $departamento = Departamento::query()->with('gestor')->findOrFail($data['departamento_id']);
 
         $this->disponibilidadeService->validarRecursoReservavel($recurso);
         $this->disponibilidadeService->validarDisponibilidade(
@@ -39,12 +41,13 @@ class CreateReservaAction
         $participantes = $this->normalizarParticipantes((string) ($data['participantes'] ?? ''));
 
         /** @var Reserva $reserva */
-        $reserva = DB::transaction(function () use ($data, $participantes): Reserva {
+        $reserva = DB::transaction(function () use ($data, $participantes, $departamento): Reserva {
             return Reserva::query()->create([
                 'recurso_id' => $data['recurso_id'],
                 'solicitante_nome' => trim((string) $data['solicitante_nome']),
                 'solicitante_email' => mb_strtolower(trim((string) $data['solicitante_email'])),
-                'departamento' => trim((string) $data['departamento']),
+                'departamento_id' => $departamento->id,
+                'departamento' => $departamento->nome,
                 'motivo' => trim((string) $data['motivo']),
                 'participantes' => $participantes,
                 'data_reserva' => $data['data_reserva'],
@@ -55,7 +58,7 @@ class CreateReservaAction
             ]);
         });
 
-        $reserva->load('recurso.tipoRecurso');
+        $reserva->load(['recurso.tipoRecurso', 'departamentoRelacionamento.gestor']);
 
         $this->notificarSolicitante($reserva);
         $this->notificarAprovadores($reserva);
@@ -95,7 +98,7 @@ class CreateReservaAction
     private function notificarAprovadores(Reserva $reserva): void
     {
         $notification = new ReservaPendenteAprovacaoNotification($reserva);
-        $aprovadores = $this->fluxoAprovacaoService->usuariosAprovadores($reserva->recurso);
+        $aprovadores = $this->fluxoAprovacaoService->usuariosAprovadores($reserva);
 
         Notification::send($aprovadores, $notification);
     }
