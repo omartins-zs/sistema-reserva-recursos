@@ -17,8 +17,6 @@ class RecursoEmManutencaoNotification extends Notification implements ShouldQueu
     ) {}
 
     /**
-     * Get the notification's delivery channels.
-     *
      * @return array<int, string>
      */
     public function via(object $notifiable): array
@@ -26,30 +24,25 @@ class RecursoEmManutencaoNotification extends Notification implements ShouldQueu
         return ['database', 'mail'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Recurso em manutenção')
-            ->greeting('Aviso de manutenção')
-            ->line("O recurso {$this->reserva->recurso->nome} entrou em manutenção.")
+            ->subject('Recurso em manutencao')
+            ->greeting('Aviso de manutencao')
+            ->line("O recurso {$this->reserva->recurso->nome} entrou em manutencao.")
             ->line("Reserva afetada: {$this->reserva->data_formatada}, {$this->reserva->periodo_formatado}")
             ->action('Consultar reservas', url('/admin/relatorios-reservas'))
-            ->line('Entre em contato com a administração para remarcar a utilização.');
+            ->line('Entre em contato com a administracao para remarcar a utilizacao.');
     }
 
     /**
-     * Get the array representation of the notification.
-     *
      * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array
     {
         return [
-            'titulo' => 'Recurso em manutenção',
-            'mensagem' => "{$this->reserva->recurso->nome} entrou em manutenção e impacta sua reserva.",
+            'titulo' => 'Recurso em manutencao',
+            'mensagem' => "{$this->reserva->recurso->nome} entrou em manutencao e impacta sua reserva.",
             'reserva_id' => $this->reserva->id,
         ];
     }
