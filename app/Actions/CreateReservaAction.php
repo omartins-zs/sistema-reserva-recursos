@@ -7,6 +7,8 @@ use App\Models\Recurso;
 use App\Models\Reserva;
 use App\Models\User;
 use App\Notifications\ReservaCriadaNotification;
+use App\Notifications\ReservaPendenteAprovacaoNotification;
+use App\Services\FluxoAprovacaoReservaService;
 use App\Services\ReservaDisponibilidadeService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -16,6 +18,7 @@ class CreateReservaAction
 {
     public function __construct(
         private readonly ReservaDisponibilidadeService $disponibilidadeService,
+        private readonly FluxoAprovacaoReservaService $fluxoAprovacaoService,
     ) {}
 
     /**
@@ -47,7 +50,7 @@ class CreateReservaAction
                 'data_reserva' => $data['data_reserva'],
                 'hora_inicio' => $data['hora_inicio'],
                 'hora_fim' => $data['hora_fim'],
-                'status' => ReservaStatus::CONFIRMADO,
+                'status' => ReservaStatus::PENDENTE_APROVACAO,
                 'observacoes' => $data['observacoes'] ?? null,
             ]);
         });
@@ -55,6 +58,7 @@ class CreateReservaAction
         $reserva->load('recurso.tipoRecurso');
 
         $this->notificarSolicitante($reserva);
+        $this->notificarAprovadores($reserva);
 
         return $reserva;
     }
@@ -69,7 +73,7 @@ class CreateReservaAction
         foreach ($lista as $email) {
             if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 throw ValidationException::withMessages([
-                    'participantes' => 'Os participantes devem ser e-mails válidos separados por ponto e vírgula.',
+                    'participantes' => 'Os participantes devem ser e-mails validos separados por ponto e virgula.',
                 ]);
             }
         }
@@ -86,5 +90,13 @@ class CreateReservaAction
         User::query()
             ->where('email', $reserva->solicitante_email)
             ->each(fn (User $user) => $user->notify($notification));
+    }
+
+    private function notificarAprovadores(Reserva $reserva): void
+    {
+        $notification = new ReservaPendenteAprovacaoNotification($reserva);
+        $aprovadores = $this->fluxoAprovacaoService->usuariosAprovadores($reserva->recurso);
+
+        Notification::send($aprovadores, $notification);
     }
 }
