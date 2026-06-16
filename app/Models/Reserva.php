@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * @property int $recurso_id
  * @property string $solicitante_nome
  * @property string $solicitante_email
+ * @property int|null $departamento_id
  * @property string $departamento
  * @property string $motivo
  * @property string|null $participantes
@@ -29,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $motivo_reprovacao
  * @property string|null $observacoes
  * @property Recurso $recurso
+ * @property Departamento|null $departamentoRelacionamento
  * @property User|null $avaliadoPor
  */
 class Reserva extends Model
@@ -45,6 +47,7 @@ class Reserva extends Model
         'recurso_id',
         'solicitante_nome',
         'solicitante_email',
+        'departamento_id',
         'departamento',
         'motivo',
         'participantes',
@@ -73,6 +76,16 @@ class Reserva extends Model
     protected static function booted(): void
     {
         static::saving(function (self $reserva): void {
+            if ($reserva->departamento_id) {
+                $departamento = $reserva->relationLoaded('departamentoRelacionamento') && $reserva->departamentoRelacionamento instanceof Departamento
+                    ? $reserva->departamentoRelacionamento
+                    : Departamento::query()->find($reserva->departamento_id);
+
+                if ($departamento instanceof Departamento) {
+                    $reserva->departamento = $departamento->nome;
+                }
+            }
+
             if (! in_array($reserva->status, [ReservaStatus::PENDENTE_APROVACAO, ReservaStatus::CONFIRMADO], true)) {
                 return;
             }
@@ -98,6 +111,14 @@ class Reserva extends Model
     public function recurso(): BelongsTo
     {
         return $this->belongsTo(Recurso::class);
+    }
+
+    /**
+     * @return BelongsTo<Departamento, $this>
+     */
+    public function departamentoRelacionamento(): BelongsTo
+    {
+        return $this->belongsTo(Departamento::class, 'departamento_id');
     }
 
     /**
@@ -140,6 +161,6 @@ class Reserva extends Model
 
     public function getResponsavelAprovacaoAttribute(): string
     {
-        return app(FluxoAprovacaoReservaService::class)->responsavelPorTipo($this->recurso->tipoRecurso->nome);
+        return app(FluxoAprovacaoReservaService::class)->responsavelPorReserva($this);
     }
 }
