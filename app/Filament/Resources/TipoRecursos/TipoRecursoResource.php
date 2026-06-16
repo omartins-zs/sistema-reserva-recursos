@@ -19,6 +19,10 @@ class TipoRecursoResource extends Resource
 {
     protected static ?string $model = TipoRecurso::class;
 
+    protected static ?string $modelLabel = 'tipo de recurso';
+
+    protected static ?string $pluralModelLabel = 'tipos de recurso';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;
 
     protected static ?string $navigationLabel = 'Tipos de Recursos';
