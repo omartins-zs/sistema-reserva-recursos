@@ -31,7 +31,8 @@ class ReservaFactory extends Factory
             'data_reserva' => $data->format('Y-m-d'),
             'hora_inicio' => '09:00:00',
             'hora_fim' => '10:00:00',
-            'status' => ReservaStatus::CONFIRMADO,
+            'status' => ReservaStatus::PENDENTE_APROVACAO,
+            'motivo_reprovacao' => null,
             'observacoes' => fake()->optional()->sentence(),
         ];
     }
