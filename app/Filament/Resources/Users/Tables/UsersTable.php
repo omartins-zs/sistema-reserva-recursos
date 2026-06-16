@@ -26,6 +26,10 @@ class UsersTable
                     ->label('Perfil')
                     ->badge()
                     ->formatStateUsing(fn ($state) => $state->label()),
+                TextColumn::make('departamento.nome')
+                    ->label('Departamento')
+                    ->placeholder('Nao vinculado')
+                    ->searchable(),
                 TextColumn::make('created_at')
                     ->label('Criado em')
                     ->dateTime('d/m/Y H:i'),
