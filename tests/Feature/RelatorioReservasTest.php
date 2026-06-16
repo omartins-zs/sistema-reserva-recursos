@@ -29,12 +29,18 @@ class RelatorioReservasTest extends TestCase
         Reserva::factory()->create([
             'recurso_id' => $recurso->id,
             'solicitante_email' => 'colaborador@empresa.com',
+            'data_reserva' => '2026-06-20',
+            'hora_inicio' => '09:00:00',
+            'hora_fim' => '10:00:00',
             'motivo' => 'Reserva visivel',
         ]);
 
         Reserva::factory()->create([
             'recurso_id' => $recurso->id,
             'solicitante_email' => 'outro@empresa.com',
+            'data_reserva' => '2026-06-20',
+            'hora_inicio' => '11:00:00',
+            'hora_fim' => '12:00:00',
             'motivo' => 'Reserva oculta',
         ]);
 
