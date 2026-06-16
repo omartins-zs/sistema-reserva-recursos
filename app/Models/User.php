@@ -68,4 +68,21 @@ class User extends Authenticatable implements FilamentUser
 
         return in_array($tipoNome, $this->role->allowedResourceTypes(), true);
     }
+
+    public function canApproveResourceType(?string $tipoNome): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        if (! $this->role->canApproveReservations()) {
+            return false;
+        }
+
+        if ($tipoNome === null || $tipoNome === '') {
+            return false;
+        }
+
+        return in_array($tipoNome, $this->role->allowedResourceTypes(), true);
+    }
 }
