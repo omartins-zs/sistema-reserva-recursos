@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Reservas;
 
+use App\Enums\ReservaStatus;
 use App\Enums\UserRole;
 use App\Filament\Resources\Reservas\Pages\CreateReserva;
 use App\Filament\Resources\Reservas\Pages\EditReserva;
@@ -20,11 +21,15 @@ class ReservaResource extends Resource
 {
     protected static ?string $model = Reserva::class;
 
+    protected static ?string $modelLabel = 'reserva';
+
+    protected static ?string $pluralModelLabel = 'reservas';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 
     protected static ?string $navigationLabel = 'Reservas';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Operacao';
+    protected static string|\UnitEnum|null $navigationGroup = 'Operacao e aprovacao';
 
     public static function form(Schema $schema): Schema
     {
@@ -38,13 +43,32 @@ class ReservaResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-        ];
+        return [];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $user = auth()->user();
+
+        if (! ($user?->role?->canApproveReservations() ?? false)) {
+            return null;
+        }
+
+        $total = (clone static::getEloquentQuery())
+            ->where('status', ReservaStatus::PENDENTE_APROVACAO->value)
+            ->count();
+
+        return $total > 0 ? (string) $total : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
     }
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery()->with('recurso.tipoRecurso');
+        $query = parent::getEloquentQuery()->with(['recurso.tipoRecurso', 'avaliadoPor']);
         $user = auth()->user();
 
         if (! $user || $user->isAdmin() || $user->hasRole(UserRole::RH)) {
