@@ -12,8 +12,8 @@
         <div class="mb-6 flex flex-col gap-4 rounded-[2rem] bg-brand-700 px-6 py-6 text-white shadow-2xl shadow-brand-700/20 lg:flex-row lg:items-center lg:justify-between">
             <div class="max-w-3xl">
                 <p class="mb-2 text-sm font-semibold uppercase tracking-[0.3em] text-sky-200">Reserva corporativa com aprovacao</p>
-                <h1 class="text-3xl font-semibold leading-tight sm:text-4xl">Solicite salas, veiculos e equipamentos em um fluxo publico com aprovacao setorial.</h1>
-                <p class="mt-3 max-w-2xl text-sm text-sky-100 sm:text-base">O colaborador solicita, o setor responsavel aprova no painel e a agenda fica protegida contra conflito de horario desde o primeiro envio.</p>
+                <h1 class="text-3xl font-semibold leading-tight sm:text-4xl">Qualquer colaborador pode solicitar recursos em uma tela publica com aprovacao pelo gestor do setor.</h1>
+                <p class="mt-3 max-w-2xl text-sm text-sky-100 sm:text-base">O funcionario escolhe seu departamento, envia o pedido e o gestor responsavel ou a administracao aprova no painel, com notificacao automatica de retorno.</p>
             </div>
             <div class="flex flex-wrap gap-3">
                 <a href="{{ route('relatorios') }}" class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/20">
@@ -36,7 +36,7 @@
             <article class="glass-panel rounded-[2rem] p-5">
                 <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-500">Responsavel atual</p>
                 <h2 class="mt-2 text-xl font-semibold text-ink-900">{{ $responsavelAprovacao }}</h2>
-                <p class="mt-3 text-sm text-slate-600">Aprovador definido automaticamente conforme o tipo de recurso selecionado.</p>
+                <p class="mt-3 text-sm text-slate-600">Aprovador definido pelo departamento informado na solicitacao, com apoio da administracao.</p>
             </article>
             <article class="glass-panel rounded-[2rem] p-5">
                 <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-500">Protecao de agenda</p>
@@ -89,6 +89,17 @@
                     </div>
 
                     <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-700">Departamento ou setor</label>
+                        <select wire:model.live="departamentoId" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+                            <option value="">Selecione</option>
+                            @foreach ($departamentos as $departamento)
+                                <option value="{{ $departamento['id'] }}">{{ $departamento['nome'] }}</option>
+                            @endforeach
+                        </select>
+                        @error('departamentoId') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
                         <label class="mb-2 block text-sm font-medium text-slate-700">Data</label>
                         <input wire:model.live="dataReserva" type="date" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
                         @error('dataReserva') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
@@ -117,12 +128,6 @@
                         <label class="mb-2 block text-sm font-medium text-slate-700">E-mail</label>
                         <input wire:model="solicitanteEmail" type="email" placeholder="nome@empresa.com" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
                         @error('solicitanteEmail') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">Departamento</label>
-                        <input wire:model="departamento" type="text" placeholder="Comercial, RH, TI..." class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
-                        @error('departamento') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="md:col-span-2">
@@ -229,7 +234,7 @@
                     <div class="mt-5 space-y-4">
                         <div class="rounded-3xl bg-white p-4">
                             <p class="text-xs uppercase tracking-[0.3em] text-slate-500">1. Solicite</p>
-                            <p class="mt-2 text-sm text-slate-700">O colaborador informa recurso, horario, contexto e participantes.</p>
+                            <p class="mt-2 text-sm text-slate-700">O colaborador informa o departamento, o recurso, o horario e o contexto de uso.</p>
                         </div>
                         <div class="rounded-3xl bg-white p-4">
                             <p class="text-xs uppercase tracking-[0.3em] text-slate-500">2. Aprove ou reprove</p>
