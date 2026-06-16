@@ -21,7 +21,7 @@ class ApproveReservaAction
 
     public function execute(Reserva $reserva, User $usuario, ?string $observacao = null): Reserva
     {
-        $reserva->loadMissing('recurso.tipoRecurso');
+        $reserva->loadMissing(['recurso.tipoRecurso', 'departamentoRelacionamento']);
 
         if (! $this->fluxoAprovacaoService->usuarioPodeAprovar($usuario, $reserva)) {
             throw ValidationException::withMessages([
@@ -59,7 +59,7 @@ class ApproveReservaAction
             ])->save();
         });
 
-        $reserva->refresh()->load(['recurso.tipoRecurso', 'avaliadoPor']);
+        $reserva->refresh()->load(['recurso.tipoRecurso', 'departamentoRelacionamento', 'avaliadoPor']);
 
         $notification = new ReservaAprovadaNotification($reserva);
 
