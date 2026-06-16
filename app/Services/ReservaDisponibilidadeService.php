@@ -18,9 +18,10 @@ class ReservaDisponibilidadeService
     public function agendaDoDia(int $recursoId, string $dataReserva): Collection
     {
         return Reserva::query()
-            ->with('recurso.tipoRecurso')
+            ->with(['recurso.tipoRecurso', 'avaliadoPor'])
             ->where('recurso_id', $recursoId)
             ->whereDate('data_reserva', $dataReserva)
+            ->whereNotIn('status', [ReservaStatus::CANCELADO->value, ReservaStatus::REJEITADO->value])
             ->orderBy('hora_inicio')
             ->get();
     }
@@ -39,13 +40,13 @@ class ReservaDisponibilidadeService
     {
         if ($recurso->status === RecursoStatus::MANUTENCAO) {
             throw ValidationException::withMessages([
-                'recurso_id' => 'Este recurso está em manutenção.',
+                'recurso_id' => 'Este recurso esta em manutencao.',
             ]);
         }
 
         if (! $recurso->ativo || $recurso->status === RecursoStatus::INATIVO) {
             throw ValidationException::withMessages([
-                'recurso_id' => 'Este recurso está inativo e não pode ser reservado.',
+                'recurso_id' => 'Este recurso esta inativo e nao pode ser reservado.',
             ]);
         }
     }
@@ -59,7 +60,7 @@ class ReservaDisponibilidadeService
     ): void {
         if (! $this->estaDisponivel($recursoId, $dataReserva, $horaInicio, $horaFim, $ignorarReservaId)) {
             throw ValidationException::withMessages([
-                'hora_inicio' => 'O recurso está indisponível nesse horário.',
+                'hora_inicio' => 'O recurso esta indisponivel nesse horario.',
             ]);
         }
     }
@@ -74,7 +75,7 @@ class ReservaDisponibilidadeService
         return Reserva::query()
             ->where('recurso_id', $recursoId)
             ->whereDate('data_reserva', $dataReserva)
-            ->where('status', ReservaStatus::CONFIRMADO->value)
+            ->whereIn('status', ReservaStatus::bloqueiaAgenda())
             ->when($ignorarReservaId, fn (Builder $query) => $query->whereKeyNot($ignorarReservaId))
             ->where('hora_inicio', '<', $horaFim)
             ->where('hora_fim', '>', $horaInicio);
