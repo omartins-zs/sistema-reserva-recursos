@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\ReservaStatus;
 use App\Enums\UserRole;
 use App\Models\Reserva;
 use App\Models\User;
@@ -20,11 +21,13 @@ class MetricasReservaService
         $query = $this->queryBase($filtros, $usuario);
 
         $total = (clone $query)->count();
-        $canceladas = (clone $query)->where('status', 'cancelado')->count();
-        $confirmadas = (clone $query)->where('status', 'confirmado')->count();
+        $pendentes = (clone $query)->where('status', ReservaStatus::PENDENTE_APROVACAO->value)->count();
+        $confirmadas = (clone $query)->where('status', ReservaStatus::CONFIRMADO->value)->count();
+        $rejeitadas = (clone $query)->where('status', ReservaStatus::REJEITADO->value)->count();
+        $canceladas = (clone $query)->where('status', ReservaStatus::CANCELADO->value)->count();
 
         $minutosReservados = (clone $query)
-            ->where('status', 'confirmado')
+            ->where('status', ReservaStatus::CONFIRMADO->value)
             ->get(['hora_inicio', 'hora_fim'])
             ->sum(function ($reserva): int {
                 $inicio = Carbon::createFromFormat('H:i:s', $reserva->hora_inicio);
@@ -59,7 +62,9 @@ class MetricasReservaService
 
         return [
             'total' => $total,
+            'pendentes' => $pendentes,
             'confirmadas' => $confirmadas,
+            'rejeitadas' => $rejeitadas,
             'canceladas' => $canceladas,
             'taxa_ocupacao' => $taxaOcupacao,
             'recursos_mais_utilizados' => $recursosMaisUtilizados,
@@ -74,7 +79,7 @@ class MetricasReservaService
     public function queryBase(array $filtros, ?User $usuario = null): Builder
     {
         $query = Reserva::query()
-            ->with(['recurso.tipoRecurso'])
+            ->with(['recurso.tipoRecurso', 'avaliadoPor'])
             ->when($filtros['tipo_recurso_id'] ?? null, function (Builder $query, mixed $tipoId): void {
                 $query->whereHas('recurso', fn (Builder $resourceQuery) => $resourceQuery->where('tipo_recurso_id', $tipoId));
             })
