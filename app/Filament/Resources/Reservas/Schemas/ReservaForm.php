@@ -51,10 +51,12 @@ class ReservaForm
                             ->email()
                             ->required()
                             ->maxLength(255),
-                        TextInput::make('departamento')
+                        Select::make('departamento_id')
                             ->label('Departamento')
                             ->required()
-                            ->maxLength(255),
+                            ->relationship('departamentoRelacionamento', 'nome')
+                            ->searchable()
+                            ->preload(),
                         Textarea::make('motivo')
                             ->label('Motivo')
                             ->required()
