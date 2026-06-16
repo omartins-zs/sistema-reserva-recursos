@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Recurso;
+use App\Models\Reserva;
+use App\Observers\RecursoObserver;
+use App\Observers\ReservaObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Reserva::observe(ReservaObserver::class);
+        Recurso::observe(RecursoObserver::class);
     }
 }
