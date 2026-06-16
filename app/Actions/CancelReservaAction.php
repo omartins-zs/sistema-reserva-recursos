@@ -16,7 +16,7 @@ class CancelReservaAction
     {
         if ($reserva->status === ReservaStatus::CANCELADO) {
             throw ValidationException::withMessages([
-                'status' => 'Esta reserva já está cancelada.',
+                'status' => 'Esta reserva ja esta cancelada.',
             ]);
         }
 
@@ -40,7 +40,7 @@ class CancelReservaAction
 
         User::query()
             ->where('email', $reserva->solicitante_email)
-            ->each(fn (User $user) => $user->notify($notification));
+            ->each(fn (User $destinatario) => $destinatario->notify($notification));
 
         return $reserva;
     }
