@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Enums\UserRole;
 use App\Livewire\ReservaRecurso;
 use App\Models\Recurso;
 use App\Models\Reserva;
 use App\Models\TipoRecurso;
+use App\Models\User;
 use App\Notifications\ReservaCriadaNotification;
+use App\Notifications\ReservaPendenteAprovacaoNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
@@ -16,11 +19,16 @@ class ReservaRecursoTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_it_creates_a_reservation_successfully(): void
+    public function test_it_creates_a_pending_request_and_notifies_the_approval_queue(): void
     {
         Notification::fake();
 
-        $tipo = TipoRecurso::factory()->create(['nome' => 'Sala']);
+        $aprovadorTi = User::factory()->create([
+            'role' => UserRole::TI,
+            'email' => 'ti@empresa.com',
+        ]);
+
+        $tipo = TipoRecurso::factory()->create(['nome' => 'Notebook']);
         $recurso = Recurso::factory()->create([
             'tipo_recurso_id' => $tipo->id,
             'status' => 'disponivel',
@@ -36,7 +44,7 @@ class ReservaRecursoTest extends TestCase
             ->set('solicitanteNome', 'Gabriel Teste')
             ->set('solicitanteEmail', 'gabriel@empresa.com')
             ->set('departamento', 'Comercial')
-            ->set('motivo', 'Reuniao com cliente')
+            ->set('motivo', 'Treinamento comercial')
             ->set('participantes', 'ana@empresa.com; bruno@empresa.com')
             ->call('reservar')
             ->assertHasNoErrors();
@@ -45,13 +53,14 @@ class ReservaRecursoTest extends TestCase
             'recurso_id' => $recurso->id,
             'solicitante_email' => 'gabriel@empresa.com',
             'departamento' => 'Comercial',
-            'status' => 'confirmado',
+            'status' => 'pendente_aprovacao',
         ]);
 
         Notification::assertSentOnDemand(ReservaCriadaNotification::class);
+        Notification::assertSentTo($aprovadorTi, ReservaPendenteAprovacaoNotification::class);
     }
 
-    public function test_it_blocks_a_conflicting_reservation(): void
+    public function test_it_blocks_a_conflicting_request(): void
     {
         $tipo = TipoRecurso::factory()->create(['nome' => 'Carro']);
         $recurso = Recurso::factory()->create([
@@ -65,7 +74,7 @@ class ReservaRecursoTest extends TestCase
             'data_reserva' => '2026-06-21',
             'hora_inicio' => '09:00:00',
             'hora_fim' => '10:00:00',
-            'status' => 'confirmado',
+            'status' => 'pendente_aprovacao',
         ]);
 
         Livewire::test(ReservaRecurso::class)
