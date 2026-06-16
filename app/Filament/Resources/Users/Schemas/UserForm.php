@@ -28,6 +28,11 @@ class UserForm
                             ->label('Perfil')
                             ->options(collect(UserRole::cases())->mapWithKeys(fn (UserRole $role) => [$role->value => $role->label()])->all())
                             ->required(),
+                        Select::make('departamento_id')
+                            ->label('Departamento')
+                            ->relationship('departamento', 'nome')
+                            ->searchable()
+                            ->preload(),
                         TextInput::make('password')
                             ->password()
                             ->revealable()
