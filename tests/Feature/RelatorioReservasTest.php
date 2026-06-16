@@ -8,7 +8,9 @@ use App\Models\Recurso;
 use App\Models\Reserva;
 use App\Models\TipoRecurso;
 use App\Models\User;
+use App\Notifications\ReservaAprovadaNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -73,5 +75,43 @@ class RelatorioReservasTest extends TestCase
             'id' => $reserva->id,
             'status' => 'cancelado',
         ]);
+    }
+
+    public function test_a_manager_can_approve_a_pending_request(): void
+    {
+        Notification::fake();
+
+        $gestorTi = User::factory()->create([
+            'email' => 'gestor-ti@empresa.com',
+            'role' => UserRole::TI,
+        ]);
+
+        $tipo = TipoRecurso::factory()->create(['nome' => 'Notebook']);
+        $recurso = Recurso::factory()->create([
+            'tipo_recurso_id' => $tipo->id,
+            'status' => 'disponivel',
+            'ativo' => true,
+        ]);
+
+        $reserva = Reserva::factory()->create([
+            'recurso_id' => $recurso->id,
+            'solicitante_email' => 'solicitante@empresa.com',
+            'status' => 'pendente_aprovacao',
+            'data_reserva' => '2026-06-25',
+            'hora_inicio' => '13:00:00',
+            'hora_fim' => '15:00:00',
+        ]);
+
+        Livewire::actingAs($gestorTi)
+            ->test(RelatorioReservas::class)
+            ->call('aprovarReserva', $reserva->id);
+
+        $this->assertDatabaseHas('reservas', [
+            'id' => $reserva->id,
+            'status' => 'confirmado',
+            'avaliado_por_id' => $gestorTi->id,
+        ]);
+
+        Notification::assertSentOnDemand(ReservaAprovadaNotification::class);
     }
 }
