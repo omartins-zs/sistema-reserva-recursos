@@ -18,8 +18,6 @@ class ReservaCanceladaNotification extends Notification implements ShouldQueue
     ) {}
 
     /**
-     * Get the notification's delivery channels.
-     *
      * @return array<int, string>
      */
     public function via(object $notifiable): array
@@ -27,9 +25,6 @@ class ReservaCanceladaNotification extends Notification implements ShouldQueue
         return ['database', 'mail'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
@@ -37,15 +32,13 @@ class ReservaCanceladaNotification extends Notification implements ShouldQueue
             ->greeting('Reserva cancelada')
             ->line("A reserva do recurso {$this->reserva->recurso->nome} foi cancelada.")
             ->line("Data: {$this->reserva->data_formatada}")
-            ->line("Horário: {$this->reserva->periodo_formatado}")
+            ->line("Horario: {$this->reserva->periodo_formatado}")
             ->when($this->motivo, fn (MailMessage $message) => $message->line("Motivo: {$this->motivo}"))
             ->action('Consultar reservas', url('/admin/relatorios-reservas'))
-            ->line('Se precisar, crie uma nova solicitação com outro horário.');
+            ->line('Se precisar, envie uma nova solicitacao para outro horario.');
     }
 
     /**
-     * Get the array representation of the notification.
-     *
      * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array
