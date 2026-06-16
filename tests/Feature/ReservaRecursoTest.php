@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\UserRole;
 use App\Livewire\ReservaRecurso;
+use App\Models\Departamento;
 use App\Models\Recurso;
 use App\Models\Reserva;
 use App\Models\TipoRecurso;
@@ -23,10 +24,12 @@ class ReservaRecursoTest extends TestCase
     {
         Notification::fake();
 
-        $aprovadorTi = User::factory()->create([
-            'role' => UserRole::TI,
-            'email' => 'ti@empresa.com',
+        $departamento = Departamento::factory()->create(['nome' => 'Comercial']);
+        $aprovadorComercial = User::factory()->create([
+            'role' => UserRole::COLABORADOR,
+            'email' => 'gestor.comercial@empresa.com',
         ]);
+        $departamento->update(['gestor_user_id' => $aprovadorComercial->id]);
 
         $tipo = TipoRecurso::factory()->create(['nome' => 'Notebook']);
         $recurso = Recurso::factory()->create([
@@ -41,9 +44,9 @@ class ReservaRecursoTest extends TestCase
             ->set('dataReserva', '2026-06-20')
             ->set('horaInicio', '09:00')
             ->set('horaFim', '10:00')
+            ->set('departamentoId', $departamento->id)
             ->set('solicitanteNome', 'Gabriel Teste')
             ->set('solicitanteEmail', 'gabriel@empresa.com')
-            ->set('departamento', 'Comercial')
             ->set('motivo', 'Treinamento comercial')
             ->set('participantes', 'ana@empresa.com; bruno@empresa.com')
             ->call('reservar')
@@ -57,11 +60,12 @@ class ReservaRecursoTest extends TestCase
         ]);
 
         Notification::assertSentOnDemand(ReservaCriadaNotification::class);
-        Notification::assertSentTo($aprovadorTi, ReservaPendenteAprovacaoNotification::class);
+        Notification::assertSentTo($aprovadorComercial, ReservaPendenteAprovacaoNotification::class);
     }
 
     public function test_it_blocks_a_conflicting_request(): void
     {
+        $departamento = Departamento::factory()->create(['nome' => 'TI']);
         $tipo = TipoRecurso::factory()->create(['nome' => 'Carro']);
         $recurso = Recurso::factory()->create([
             'tipo_recurso_id' => $tipo->id,
@@ -74,6 +78,8 @@ class ReservaRecursoTest extends TestCase
             'data_reserva' => '2026-06-21',
             'hora_inicio' => '09:00:00',
             'hora_fim' => '10:00:00',
+            'departamento_id' => $departamento->id,
+            'departamento' => $departamento->nome,
             'status' => 'pendente_aprovacao',
         ]);
 
@@ -83,9 +89,9 @@ class ReservaRecursoTest extends TestCase
             ->set('dataReserva', '2026-06-21')
             ->set('horaInicio', '09:30')
             ->set('horaFim', '10:30')
+            ->set('departamentoId', $departamento->id)
             ->set('solicitanteNome', 'Outro Usuario')
             ->set('solicitanteEmail', 'outro@empresa.com')
-            ->set('departamento', 'TI')
             ->set('motivo', 'Visita externa')
             ->call('reservar')
             ->assertHasErrors(['horaInicio']);
@@ -95,6 +101,7 @@ class ReservaRecursoTest extends TestCase
 
     public function test_it_blocks_resources_in_maintenance(): void
     {
+        $departamento = Departamento::factory()->create(['nome' => 'RH']);
         $tipo = TipoRecurso::factory()->create(['nome' => 'Notebook']);
         $recurso = Recurso::factory()->create([
             'tipo_recurso_id' => $tipo->id,
@@ -105,6 +112,7 @@ class ReservaRecursoTest extends TestCase
         Livewire::test(ReservaRecurso::class)
             ->set('tipoRecursoId', $tipo->id)
             ->set('recursoId', $recurso->id)
+            ->set('departamentoId', $departamento->id)
             ->set('dataReserva', '2026-06-21')
             ->set('horaInicio', '14:00')
             ->set('horaFim', '15:00')
