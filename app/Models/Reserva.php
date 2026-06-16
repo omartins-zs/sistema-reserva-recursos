@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ReservaStatus;
+use App\Services\FluxoAprovacaoReservaService;
 use App\Services\ReservaDisponibilidadeService;
 use Database\Factories\ReservaFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,8 +24,12 @@ use Illuminate\Support\Carbon;
  * @property string $hora_inicio
  * @property string $hora_fim
  * @property ReservaStatus $status
+ * @property int|null $avaliado_por_id
+ * @property Carbon|string|null $avaliado_em
+ * @property string|null $motivo_reprovacao
  * @property string|null $observacoes
  * @property Recurso $recurso
+ * @property User|null $avaliadoPor
  */
 class Reserva extends Model
 {
@@ -47,6 +52,9 @@ class Reserva extends Model
         'hora_inicio',
         'hora_fim',
         'status',
+        'avaliado_por_id',
+        'avaliado_em',
+        'motivo_reprovacao',
         'observacoes',
     ];
 
@@ -57,6 +65,7 @@ class Reserva extends Model
     {
         return [
             'data_reserva' => 'date',
+            'avaliado_em' => 'datetime',
             'status' => ReservaStatus::class,
         ];
     }
@@ -64,7 +73,7 @@ class Reserva extends Model
     protected static function booted(): void
     {
         static::saving(function (self $reserva): void {
-            if ($reserva->status !== ReservaStatus::CONFIRMADO) {
+            if (! in_array($reserva->status, [ReservaStatus::PENDENTE_APROVACAO, ReservaStatus::CONFIRMADO], true)) {
                 return;
             }
 
@@ -92,6 +101,14 @@ class Reserva extends Model
     }
 
     /**
+     * @return BelongsTo<User, $this>
+     */
+    public function avaliadoPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'avaliado_por_id');
+    }
+
+    /**
      * @return HasMany<HistoricoReserva, $this>
      */
     public function historicos(): HasMany
@@ -101,7 +118,7 @@ class Reserva extends Model
 
     public function getPeriodoFormatadoAttribute(): string
     {
-        return sprintf('%s às %s', substr($this->hora_inicio, 0, 5), substr($this->hora_fim, 0, 5));
+        return sprintf('%s as %s', substr($this->hora_inicio, 0, 5), substr($this->hora_fim, 0, 5));
     }
 
     public function getDataFormatadaAttribute(): string
@@ -119,5 +136,10 @@ class Reserva extends Model
             ->filter()
             ->values()
             ->all();
+    }
+
+    public function getResponsavelAprovacaoAttribute(): string
+    {
+        return app(FluxoAprovacaoReservaService::class)->responsavelPorTipo($this->recurso->tipoRecurso->nome);
     }
 }
