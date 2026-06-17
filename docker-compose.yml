@@ -2,6 +2,17 @@ x-laravel-service: &laravel-service
   build:
     context: .
     dockerfile: Dockerfile
+  environment:
+    APP_URL: ${APP_URL}
+    DB_CONNECTION: ${DB_CONNECTION}
+    DB_HOST: ${DB_HOST}
+    DB_PORT: ${DB_PORT}
+    DB_DATABASE: ${DB_DATABASE}
+    DB_USERNAME: ${DB_USERNAME}
+    DB_PASSWORD: ${DB_PASSWORD}
+    CACHE_STORE: ${CACHE_STORE}
+    QUEUE_CONNECTION: ${QUEUE_CONNECTION}
+    SESSION_DRIVER: ${SESSION_DRIVER}
   working_dir: /var/www/html
   volumes:
     - ./:/var/www/html
