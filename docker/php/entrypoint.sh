@@ -19,7 +19,6 @@ if [ -f artisan ] && [ -f vendor/autoload.php ]; then
     php artisan package:discover --ansi >/dev/null 2>&1 || true
 fi
 
-chown -R www-data:www-data storage bootstrap/cache
-chmod -R ug+rwx storage bootstrap/cache
+chmod ug+rwx storage bootstrap/cache storage/framework storage/framework/cache storage/framework/sessions storage/framework/views 2>/dev/null || true
 
 exec "$@"
