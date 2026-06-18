@@ -54,8 +54,6 @@ class RelatorioReservas extends Component
 
     public function mount(): void
     {
-        $this->dataInicial = now()->startOfMonth()->toDateString();
-        $this->dataFinal = now()->endOfMonth()->toDateString();
         $this->carregarTiposRecursos();
         $this->carregarRecursos();
         $this->carregarDepartamentos();
@@ -73,6 +71,22 @@ class RelatorioReservas extends Component
         if (in_array($property, ['recursoId', 'departamentoId', 'solicitante', 'dataInicial', 'dataFinal', 'status'], true)) {
             $this->resetPage();
         }
+    }
+
+    public function limparFiltros(): void
+    {
+        $this->reset([
+            'tipoRecursoId',
+            'recursoId',
+            'departamentoId',
+            'solicitante',
+            'dataInicial',
+            'dataFinal',
+            'status',
+        ]);
+
+        $this->carregarRecursos();
+        $this->resetPage();
     }
 
     public function exportarCsv()
