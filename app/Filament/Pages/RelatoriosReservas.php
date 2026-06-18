@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 
 class RelatoriosReservas extends Page
@@ -11,11 +12,13 @@ class RelatoriosReservas extends Page
 
     protected static ?string $navigationLabel = 'Relatorios';
 
-    protected static ?string $title = 'Central de relatorios';
+    protected static ?string $title = 'Relatorios e aprovacoes';
 
     protected static ?string $slug = 'relatorios-reservas';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Operacao e aprovacao';
+
+    protected Width|string|null $maxContentWidth = Width::Full;
 
     protected string $view = 'filament.pages.relatorios-reservas';
 
