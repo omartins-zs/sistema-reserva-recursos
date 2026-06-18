@@ -24,6 +24,8 @@ class Departamento extends Model
     /** @use HasFactory<DepartamentoFactory> */
     use HasFactory;
 
+    private const ACTIVE_CACHE_KEY = 'departamentos.ativos.v2';
+
     protected $table = 'departamentos';
 
     /**
@@ -49,8 +51,8 @@ class Departamento extends Model
 
     protected static function booted(): void
     {
-        static::saved(fn () => Cache::forget('departamentos.ativos'));
-        static::deleted(fn () => Cache::forget('departamentos.ativos'));
+        static::saved(fn () => self::forgetActiveCache());
+        static::deleted(fn () => self::forgetActiveCache());
     }
 
     /**
@@ -82,12 +84,55 @@ class Departamento extends Model
      */
     public static function ativosEmCache(): Collection
     {
-        /** @var Collection<int, self> $departamentos */
-        $departamentos = Cache::rememberForever(
-            'departamentos.ativos',
-            fn () => self::query()->with('gestor')->where('ativo', true)->orderBy('nome')->get()
-        );
+        $departamentos = Cache::get(self::ACTIVE_CACHE_KEY);
 
-        return $departamentos;
+        if (! self::payloadValido($departamentos)) {
+            $departamentos = self::query()
+                ->with('gestor')
+                ->where('ativo', true)
+                ->orderBy('nome')
+                ->get()
+                ->map(fn (self $departamento): array => [
+                    'attributes' => $departamento->attributesToArray(),
+                    'gestor' => $departamento->gestor?->attributesToArray(),
+                ])
+                ->all();
+
+            Cache::forever(self::ACTIVE_CACHE_KEY, $departamentos);
+        }
+
+        /** @var array<int, array{attributes: array<string, mixed>, gestor: array<string, mixed>|null}> $departamentos */
+        $collection = self::hydrate(array_map(
+            fn (array $item): array => $item['attributes'],
+            $departamentos,
+        ));
+
+        $collection->each(function (self $departamento, int $index) use ($departamentos): void {
+            $gestor = $departamentos[$index]['gestor'];
+
+            if (is_array($gestor)) {
+                $departamento->setRelation('gestor', (new User)->newFromBuilder($gestor));
+            }
+        });
+
+        return $collection;
+    }
+
+    private static function forgetActiveCache(): void
+    {
+        Cache::forget('departamentos.ativos');
+        Cache::forget(self::ACTIVE_CACHE_KEY);
+    }
+
+    private static function payloadValido(mixed $payload): bool
+    {
+        return is_array($payload)
+            && collect($payload)->every(function (mixed $item): bool {
+                return is_array($item)
+                    && isset($item['attributes'])
+                    && is_array($item['attributes'])
+                    && array_key_exists('gestor', $item)
+                    && (is_array($item['gestor']) || $item['gestor'] === null);
+            });
     }
 }
