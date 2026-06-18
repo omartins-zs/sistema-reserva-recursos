@@ -10,6 +10,7 @@ use App\Models\Reserva;
 use App\Models\TipoRecurso;
 use App\Models\User;
 use App\Notifications\ReservaAprovadaNotification;
+use App\Services\MetricasReservaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
@@ -126,5 +127,30 @@ class RelatorioReservasTest extends TestCase
         ]);
 
         Notification::assertSentOnDemand(ReservaAprovadaNotification::class);
+    }
+
+    public function test_report_metrics_calculate_a_positive_occupancy_rate(): void
+    {
+        $departamento = Departamento::factory()->create(['nome' => 'Operacoes']);
+        $tipo = TipoRecurso::factory()->create(['nome' => 'Notebook']);
+        $recurso = Recurso::factory()->create([
+            'tipo_recurso_id' => $tipo->id,
+            'status' => 'disponivel',
+            'ativo' => true,
+        ]);
+
+        Reserva::factory()->create([
+            'recurso_id' => $recurso->id,
+            'departamento_id' => $departamento->id,
+            'departamento' => $departamento->nome,
+            'status' => 'confirmado',
+            'data_reserva' => '2026-06-20',
+            'hora_inicio' => '09:00:00',
+            'hora_fim' => '11:00:00',
+        ]);
+
+        $metricas = app(MetricasReservaService::class)->resumo([]);
+
+        $this->assertSame(16.7, $metricas['taxa_ocupacao']);
     }
 }
