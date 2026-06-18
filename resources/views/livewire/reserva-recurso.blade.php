@@ -12,8 +12,8 @@
         <div class="mb-6 flex flex-col gap-4 rounded-[2rem] bg-brand-700 px-6 py-6 text-white shadow-2xl shadow-brand-700/20 lg:flex-row lg:items-center lg:justify-between">
             <div class="max-w-3xl">
                 <p class="mb-2 text-sm font-semibold uppercase tracking-[0.3em] text-sky-200">Reserva corporativa com aprovacao</p>
-                <h1 class="text-3xl font-semibold leading-tight sm:text-4xl">Qualquer colaborador pode solicitar recursos em uma tela publica com aprovacao pelo gestor do setor.</h1>
-                <p class="mt-3 max-w-2xl text-sm text-sky-100 sm:text-base">O funcionario escolhe seu departamento, envia o pedido e o gestor responsavel ou a administracao aprova no painel, com notificacao automatica de retorno.</p>
+                <h1 class="text-3xl font-semibold leading-tight sm:text-4xl">Solicite salas, notebooks, carros e equipamentos com aprovacao alinhada ao seu setor.</h1>
+                <p class="mt-3 max-w-2xl text-sm text-sky-100 sm:text-base">Informe o departamento, o periodo e o contexto de uso para encaminhar a solicitacao ao responsavel certo, com retorno automatico no sistema e por e-mail.</p>
             </div>
             <div class="flex flex-wrap gap-3">
                 <a href="{{ route('relatorios') }}" class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/20">
@@ -29,7 +29,7 @@
 
         <div class="mb-6 grid gap-4 lg:grid-cols-3">
             <article class="glass-panel rounded-[2rem] p-5">
-                <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-500">Fluxo publico</p>
+                <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-500">Fluxo de solicitacao</p>
                 <h2 class="mt-2 text-xl font-semibold text-ink-900">Pedido simples para o colaborador</h2>
                 <p class="mt-3 text-sm text-slate-600">A reserva nasce como solicitacao pendente e ja entra na fila certa para analise.</p>
             </article>
