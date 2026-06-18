@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             RecursosSeeder::class,
             DepartamentosSeeder::class,
             UsersSeeder::class,
+            ReservasDemoSeeder::class,
         ]);
     }
 }
