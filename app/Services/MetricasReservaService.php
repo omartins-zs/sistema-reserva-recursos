@@ -33,11 +33,11 @@ class MetricasReservaService
                 $inicio = Carbon::createFromFormat('H:i:s', $reserva->hora_inicio);
                 $fim = Carbon::createFromFormat('H:i:s', $reserva->hora_fim);
 
-                return (int) $fim->diffInMinutes($inicio);
+                return (int) $inicio->diffInMinutes($fim);
             });
 
         $recursosUnicos = max(1, (int) (clone $query)->distinct('recurso_id')->count('recurso_id'));
-        $diasConsiderados = max(1, $this->diasDoPeriodo($filtros));
+        $diasConsiderados = max(1, $this->diasDoPeriodo($filtros, $query));
         $capacidadeTotalMinutos = $recursosUnicos * $diasConsiderados * 12 * 60;
         $taxaOcupacao = round(($minutosReservados / $capacidadeTotalMinutos) * 100, 1);
 
@@ -108,10 +108,18 @@ class MetricasReservaService
     /**
      * @param  array<string, mixed>  $filtros
      */
-    private function diasDoPeriodo(array $filtros): int
+    private function diasDoPeriodo(array $filtros, Builder $query): int
     {
-        $dataInicial = $filtros['data_inicial'] ?? now()->toDateString();
-        $dataFinal = $filtros['data_final'] ?? $dataInicial;
+        $primeiraData = (clone $query)->min('data_reserva');
+        $ultimaData = (clone $query)->max('data_reserva');
+
+        $dataInicial = filled($filtros['data_inicial'] ?? null)
+            ? $filtros['data_inicial']
+            : ($primeiraData ?? now()->toDateString());
+
+        $dataFinal = filled($filtros['data_final'] ?? null)
+            ? $filtros['data_final']
+            : ($ultimaData ?? $dataInicial);
 
         return (int) Carbon::parse($dataInicial)->diffInDays(Carbon::parse($dataFinal)) + 1;
     }
