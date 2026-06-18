@@ -12,13 +12,13 @@
         <div class="mb-6 flex flex-col gap-4 rounded-[2rem] bg-brand-700 px-6 py-6 text-white shadow-2xl shadow-brand-700/20 lg:flex-row lg:items-center lg:justify-between">
             <div class="max-w-3xl">
                 <p class="mb-2 text-sm font-semibold uppercase tracking-[0.3em] text-sky-200">Reserva corporativa com aprovacao</p>
-                <h1 class="text-3xl font-semibold leading-tight sm:text-4xl">Solicite salas, notebooks, carros e equipamentos com aprovacao alinhada ao seu setor.</h1>
-                <p class="mt-3 max-w-2xl text-sm text-sky-100 sm:text-base">Informe o departamento, o periodo e o contexto de uso para encaminhar a solicitacao ao responsavel certo, com retorno automatico no sistema e por e-mail.</p>
+                <h1 class="text-3xl font-semibold leading-tight sm:text-4xl">Solicite salas, notebooks, carros e equipamentos com uma experiencia clara e pronta para aprovacao.</h1>
+                <p class="mt-3 max-w-2xl text-sm text-sky-100 sm:text-base">Informe o departamento, o periodo e o contexto de uso para direcionar a solicitacao ao gestor correto, com notificacoes automaticas e agenda protegida contra conflitos.</p>
             </div>
             <div class="flex flex-wrap gap-3">
                 <a href="{{ route('relatorios') }}" class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/20">
                     <i class="fa-solid fa-chart-column"></i>
-                    Relatorios
+                    Relatorios e aprovacoes
                 </a>
                 <a href="/admin" class="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-brand-700 transition hover:bg-sky-50">
                     <i class="fa-solid fa-user-shield"></i>
@@ -67,84 +67,123 @@
 
                 <div class="grid gap-5 md:grid-cols-2">
                     <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">Tipo de recurso</label>
-                        <select wire:model.live="tipoRecursoId" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
-                            <option value="">Selecione</option>
-                            @foreach ($tiposRecursos as $tipo)
-                                <option value="{{ $tipo['id'] }}">{{ $tipo['nome'] }}</option>
-                            @endforeach
-                        </select>
+                        <label class="booking-label">Tipo de recurso</label>
+                        <div class="relative">
+                            <select wire:model.live="tipoRecursoId" class="booking-select">
+                                <option value="">Selecione</option>
+                                @foreach ($tiposRecursos as $tipo)
+                                    <option value="{{ $tipo['id'] }}">{{ $tipo['nome'] }}</option>
+                                @endforeach
+                            </select>
+                            <i class="fa-solid fa-chevron-down picker-icon"></i>
+                        </div>
                         @error('tipoRecursoId') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">Recurso especifico</label>
-                        <select wire:model.live="recursoId" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
-                            <option value="">Selecione</option>
-                            @foreach ($recursos as $recurso)
-                                <option value="{{ $recurso['id'] }}">{{ $recurso['nome'] }}</option>
-                            @endforeach
-                        </select>
+                        <label class="booking-label">Recurso especifico</label>
+                        <div class="relative">
+                            <select wire:model.live="recursoId" class="booking-select">
+                                <option value="">Selecione</option>
+                                @foreach ($recursos as $recurso)
+                                    <option value="{{ $recurso['id'] }}">{{ $recurso['nome'] }}</option>
+                                @endforeach
+                            </select>
+                            <i class="fa-solid fa-chevron-down picker-icon"></i>
+                        </div>
                         @error('recursoId') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">Departamento ou setor</label>
-                        <select wire:model.live="departamentoId" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
-                            <option value="">Selecione</option>
-                            @foreach ($departamentos as $departamento)
-                                <option value="{{ $departamento['id'] }}">{{ $departamento['nome'] }}</option>
-                            @endforeach
-                        </select>
+                        <label class="booking-label">Departamento ou setor</label>
+                        <div class="relative">
+                            <select wire:model.live="departamentoId" class="booking-select">
+                                <option value="">Selecione</option>
+                                @foreach ($departamentos as $departamento)
+                                    <option value="{{ $departamento['id'] }}">{{ $departamento['nome'] }}</option>
+                                @endforeach
+                            </select>
+                            <i class="fa-solid fa-chevron-down picker-icon"></i>
+                        </div>
                         @error('departamentoId') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">Data</label>
-                        <input wire:model.live="dataReserva" type="date" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+                        <label class="booking-label">Data</label>
+                        <div class="picker-shell">
+                            <input
+                                wire:model.live="dataReserva"
+                                data-picker="date"
+                                data-placeholder="Selecione a data"
+                                type="text"
+                                placeholder="Selecione a data"
+                                class="booking-input pr-11"
+                            >
+                            <i class="fa-regular fa-calendar picker-icon"></i>
+                        </div>
                         @error('dataReserva') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="mb-2 block text-sm font-medium text-slate-700">Hora inicial</label>
-                            <input wire:model="horaInicio" type="time" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+                            <label class="booking-label">Hora inicial</label>
+                            <div class="picker-shell">
+                                <input
+                                    wire:model="horaInicio"
+                                    data-picker="time"
+                                    data-placeholder="08:00"
+                                    type="text"
+                                    placeholder="08:00"
+                                    class="booking-input pr-11"
+                                >
+                                <i class="fa-regular fa-clock picker-icon"></i>
+                            </div>
                             @error('horaInicio') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="mb-2 block text-sm font-medium text-slate-700">Hora final</label>
-                            <input wire:model="horaFim" type="time" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+                            <label class="booking-label">Hora final</label>
+                            <div class="picker-shell">
+                                <input
+                                    wire:model="horaFim"
+                                    data-picker="time"
+                                    data-placeholder="09:00"
+                                    type="text"
+                                    placeholder="09:00"
+                                    class="booking-input pr-11"
+                                >
+                                <i class="fa-regular fa-clock picker-icon"></i>
+                            </div>
                             @error('horaFim') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
                     <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">Solicitante</label>
-                        <input wire:model="solicitanteNome" type="text" placeholder="Nome completo" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+                        <label class="booking-label">Solicitante</label>
+                        <input wire:model="solicitanteNome" type="text" placeholder="Nome completo" class="booking-input">
                         @error('solicitanteNome') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">E-mail</label>
-                        <input wire:model="solicitanteEmail" type="email" placeholder="nome@empresa.com" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+                        <label class="booking-label">E-mail</label>
+                        <input wire:model="solicitanteEmail" type="email" placeholder="nome@empresa.com" class="booking-input">
                         @error('solicitanteEmail') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="md:col-span-2">
-                        <label class="mb-2 block text-sm font-medium text-slate-700">Motivo da reserva</label>
-                        <textarea wire:model="motivo" rows="3" placeholder="Explique o contexto do uso" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"></textarea>
+                        <label class="booking-label">Motivo da reserva</label>
+                        <textarea wire:model="motivo" rows="3" placeholder="Explique o contexto do uso" class="booking-input min-h-[7rem] resize-y"></textarea>
                         @error('motivo') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="md:col-span-2">
-                        <label class="mb-2 block text-sm font-medium text-slate-700">Convidados ou participantes</label>
-                        <input wire:model="participantes" type="text" placeholder="email1@empresa.com; email2@empresa.com" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
+                        <label class="booking-label">Convidados ou participantes</label>
+                        <input wire:model="participantes" type="text" placeholder="email1@empresa.com; email2@empresa.com" class="booking-input">
                         @error('participantes') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="md:col-span-2">
-                        <label class="mb-2 block text-sm font-medium text-slate-700">Observacoes</label>
-                        <textarea wire:model="observacoes" rows="2" placeholder="Informacoes extras para a aprovacao, se necessario" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"></textarea>
+                        <label class="booking-label">Observacoes</label>
+                        <textarea wire:model="observacoes" rows="2" placeholder="Informacoes extras para a aprovacao, se necessario" class="booking-input min-h-[6rem] resize-y"></textarea>
                     </div>
                 </div>
 
@@ -190,7 +229,7 @@
                 <section class="glass-panel rounded-[2rem] p-5 sm:p-7">
                     <div class="flex items-center justify-between gap-3">
                         <div>
-                            <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-500">Agenda do dia</p>
+                            <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-500">Agenda selecionada</p>
                             <h2 class="mt-2 text-2xl font-semibold text-ink-900">{{ $recursoSelecionado?->nome ?? 'Selecione um recurso' }}</h2>
                             <p class="mt-2 text-sm text-slate-500">{{ $hojeFormatado }}</p>
                         </div>
