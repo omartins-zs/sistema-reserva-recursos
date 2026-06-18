@@ -21,6 +21,8 @@ class TipoRecurso extends Model
     /** @use HasFactory<TipoRecursoFactory> */
     use HasFactory;
 
+    private const ACTIVE_CACHE_KEY = 'tipos-recursos.ativos.v2';
+
     protected $table = 'tipos_recursos';
 
     /**
@@ -45,8 +47,8 @@ class TipoRecurso extends Model
 
     protected static function booted(): void
     {
-        static::saved(fn () => Cache::forget('tipos-recursos.ativos'));
-        static::deleted(fn () => Cache::forget('tipos-recursos.ativos'));
+        static::saved(fn () => self::forgetActiveCache());
+        static::deleted(fn () => self::forgetActiveCache());
     }
 
     /**
@@ -62,12 +64,34 @@ class TipoRecurso extends Model
      */
     public static function ativosEmCache(): Collection
     {
-        /** @var Collection<int, self> $tipos */
-        $tipos = Cache::rememberForever(
-            'tipos-recursos.ativos',
-            fn () => self::query()->where('ativo', true)->orderBy('nome')->get()
-        );
+        $tipos = Cache::get(self::ACTIVE_CACHE_KEY);
 
-        return $tipos;
+        if (! self::payloadValido($tipos)) {
+            $tipos = self::query()
+                ->where('ativo', true)
+                ->orderBy('nome')
+                ->get()
+                ->map(fn (self $tipo): array => $tipo->attributesToArray())
+                ->all();
+
+            Cache::forever(self::ACTIVE_CACHE_KEY, $tipos);
+        }
+
+        /** @var Collection<int, self> $tiposCollection */
+        $tiposCollection = self::hydrate($tipos);
+
+        return $tiposCollection;
+    }
+
+    private static function forgetActiveCache(): void
+    {
+        Cache::forget('tipos-recursos.ativos');
+        Cache::forget(self::ACTIVE_CACHE_KEY);
+    }
+
+    private static function payloadValido(mixed $payload): bool
+    {
+        return is_array($payload)
+            && collect($payload)->every(fn (mixed $item): bool => is_array($item));
     }
 }
