@@ -1,6 +1,8 @@
 @import 'flatpickr/dist/flatpickr.min.css';
 @import 'tailwindcss';
 
+@variant dark (&:where(.dark, .dark *));
+
 @source '../views/**/*.blade.php';
 @source '../../app/Livewire/**/*.php';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -188,4 +190,116 @@ span.flatpickr-weekday {
 .flatpickr-time .flatpickr-am-pm:hover,
 .numInputWrapper:hover {
     background: #f4f8fb;
+}
+
+/* Custom dark mode selectors and variables */
+.page-wrapper {
+    background: radial-gradient(circle at top left, rgba(15, 76, 129, 0.18), transparent 35%), linear-gradient(180deg, #f6f9fc 0%, #eef4f8 48%, #e2ebf2 100%);
+}
+
+.dark .page-wrapper {
+    background: radial-gradient(circle at top left, rgba(15, 76, 129, 0.4), transparent 35%), linear-gradient(180deg, #090d16 0%, #0f172a 48%, #0f172a 100%) !important;
+}
+
+.dark .glass-panel {
+    background: rgba(15, 23, 42, 0.85) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 24px 70px -40px rgba(0, 0, 0, 0.7) !important;
+}
+
+.dark .text-ink-900 {
+    color: #f1f5f9 !important;
+}
+
+.dark .text-slate-600 {
+    color: #94a3b8 !important;
+}
+
+.dark .text-slate-500 {
+    color: #94a3b8 !important;
+}
+
+.dark .text-slate-700 {
+    color: #cbd5e1 !important;
+}
+
+.dark .bg-white:not(button):not(a) {
+    background-color: #0f172a !important;
+}
+
+.dark .bg-slate-50 {
+    background-color: rgba(30, 41, 59, 0.5) !important;
+}
+
+.dark .bg-slate-100 {
+    background-color: #1e293b !important;
+}
+
+.dark .border-slate-200 {
+    border-color: #1e293b !important;
+}
+
+.dark .border-slate-300 {
+    border-color: #334155 !important;
+}
+
+.dark .booking-input,
+.dark .booking-select {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+.dark .booking-input:focus,
+.dark .booking-select:focus {
+    border-color: #0f4c81 !important;
+    box-shadow: 0 0 0 4px rgba(15, 76, 129, 0.25) !important;
+}
+
+.dark .booking-label {
+    color: #cbd5e1 !important;
+}
+
+.dark .booking-picker-alt {
+    background-color: #1e293b !important;
+}
+
+.dark .status-badge {
+    background-color: rgba(30, 41, 59, 0.8) !important;
+    color: #cbd5e1 !important;
+}
+
+.dark .flatpickr-calendar {
+    background: #0f172a !important;
+    border-color: #1e293b !important;
+    box-shadow: 0 24px 70px -40px rgba(0, 0, 0, 0.8) !important;
+}
+
+.dark .flatpickr-weekdays {
+    background: #1e293b !important;
+}
+
+.dark .flatpickr-day {
+    color: #cbd5e1 !important;
+}
+
+.dark .flatpickr-day:hover {
+    background: #1e293b !important;
+    border-color: #1e293b !important;
+}
+
+.dark .flatpickr-day.today {
+    border-color: #38bdf8 !important;
+}
+
+/* Theme Switcher Segment Button Active Styles */
+html[data-theme-preference="light"] #theme-btn-light {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+html[data-theme-preference="dark"] #theme-btn-dark {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
 }
