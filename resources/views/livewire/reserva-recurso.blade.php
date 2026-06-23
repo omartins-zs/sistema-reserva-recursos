@@ -2,46 +2,66 @@
     $recursoSelecionadoArray = collect($recursos)->firstWhere('id', $recursoId);
 @endphp
 
-<div class="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(15,76,129,0.18),_transparent_35%),linear-gradient(180deg,#f6f9fc_0%,#eef4f8_48%,#e2ebf2_100%)]">
+<div class="relative min-h-screen overflow-hidden page-wrapper">
     <div class="hero-orb -left-14 top-20 h-48 w-48 bg-sky-300/60"></div>
     <div class="hero-orb right-10 top-36 h-56 w-56 bg-emerald-200/60 [animation-delay:2s]"></div>
     <div class="hero-orb bottom-24 left-1/3 h-44 w-44 bg-amber-200/60 [animation-delay:4s]"></div>
     <div class="soft-grid absolute inset-0 opacity-40"></div>
-
+ 
     <div class="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div class="mb-6 flex flex-col gap-4 rounded-[2rem] bg-brand-700 px-6 py-6 text-white shadow-2xl shadow-brand-700/20 lg:flex-row lg:items-center lg:justify-between">
             <div class="max-w-3xl">
-                <p class="mb-2 text-sm font-semibold uppercase tracking-[0.3em] text-sky-200">Reserva corporativa com aprovacao</p>
+                <div class="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-500/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-sky-200 backdrop-blur-sm">
+                    <span class="h-1.5 w-1.5 rounded-full bg-sky-300 animate-pulse"></span>
+                    Reserva corporativa com aprovacao
+                </div>
                 <h1 class="text-3xl font-semibold leading-tight sm:text-4xl">Solicite salas, notebooks, carros e equipamentos com uma experiencia clara e pronta para aprovacao.</h1>
+                <!-- 
                 <p class="mt-3 max-w-2xl text-sm text-sky-100 sm:text-base">Informe o departamento, o periodo e o contexto de uso para direcionar a solicitacao ao gestor correto, com notificacoes automaticas e agenda protegida contra conflitos.</p>
+                -->
             </div>
-            <div class="flex flex-wrap gap-3">
-                <a href="{{ route('relatorios') }}" class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/20">
-                    <i class="fa-solid fa-chart-column"></i>
-                    Relatorios e aprovacoes
-                </a>
-                <a href="/admin" class="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-brand-700 transition hover:bg-sky-50">
+            <div class="flex flex-wrap gap-4 items-center lg:ml-auto">
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-sky-200 uppercase tracking-widest">Tema</span>
+                    <div class="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur-sm">
+                        <button onclick="window.setAppTheme('light')" id="theme-btn-light" class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-white/80 transition-all hover:bg-white/10 hover:text-white cursor-pointer">
+                            <i class="fa-solid fa-sun text-amber-300"></i>
+                            Claro
+                        </button>
+                        <button onclick="window.setAppTheme('dark')" id="theme-btn-dark" class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-white/80 transition-all hover:bg-white/10 hover:text-white cursor-pointer">
+                            <i class="fa-solid fa-moon text-sky-300"></i>
+                            Escuro
+                        </button>
+                    </div>
+                </div>
+                <a href="/admin" class="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-brand-700 shadow-lg shadow-black/10 transition-all duration-300 hover:bg-sky-50 hover:shadow-xl hover:shadow-black/15 hover:-translate-y-0.5 active:translate-y-0">
                     <i class="fa-solid fa-user-shield"></i>
-                    Painel de aprovacao
+                    Acessar painel
                 </a>
             </div>
         </div>
 
         <div class="mb-6 grid gap-4 lg:grid-cols-3">
             <article class="glass-panel rounded-[2rem] p-5">
-                <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-500">Fluxo de solicitacao</p>
+                <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-500 dark:text-sky-400">Fluxo de solicitacao</p>
                 <h2 class="mt-2 text-xl font-semibold text-ink-900">Pedido simples para o colaborador</h2>
+                <!-- 
                 <p class="mt-3 text-sm text-slate-600">A reserva nasce como solicitacao pendente e ja entra na fila certa para analise.</p>
+                -->
             </article>
             <article class="glass-panel rounded-[2rem] p-5">
-                <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-500">Responsavel atual</p>
+                <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-500 dark:text-sky-400">Responsavel atual</p>
                 <h2 class="mt-2 text-xl font-semibold text-ink-900">{{ $responsavelAprovacao }}</h2>
+                <!-- 
                 <p class="mt-3 text-sm text-slate-600">Aprovador definido pelo departamento informado na solicitacao, com apoio da administracao.</p>
+                -->
             </article>
             <article class="glass-panel rounded-[2rem] p-5">
-                <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-500">Protecao de agenda</p>
+                <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-500 dark:text-sky-400">Protecao de agenda</p>
                 <h2 class="mt-2 text-xl font-semibold text-ink-900">Sem sobreposicao</h2>
+                <!-- 
                 <p class="mt-3 text-sm text-slate-600">Solicitacoes pendentes e reservas aprovadas ja bloqueiam o mesmo recurso no mesmo periodo.</p>
+                -->
             </article>
         </div>
 
@@ -171,19 +191,19 @@
 
                     <div class="md:col-span-2">
                         <label class="booking-label">Motivo da reserva</label>
-                        <textarea wire:model="motivo" rows="3" placeholder="Explique o contexto do uso" class="booking-input min-h-[7rem] resize-y"></textarea>
+                        <textarea wire:model="motivo" rows="3" placeholder="Ex: Reunião trimestral de alinhamento com a diretoria..." class="booking-input min-h-[7rem] resize-y"></textarea>
                         @error('motivo') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="md:col-span-2">
                         <label class="booking-label">Convidados ou participantes</label>
-                        <input wire:model="participantes" type="text" placeholder="email1@empresa.com; email2@empresa.com" class="booking-input">
+                        <input wire:model="participantes" type="text" placeholder="Ex: joao.silva@empresa.com; maria.oliveira@empresa.com (separe com ponto e vírgula)" class="booking-input">
                         @error('participantes') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="md:col-span-2">
                         <label class="booking-label">Observacoes</label>
-                        <textarea wire:model="observacoes" rows="2" placeholder="Informacoes extras para a aprovacao, se necessario" class="booking-input min-h-[6rem] resize-y"></textarea>
+                        <textarea wire:model="observacoes" rows="2" placeholder="Ex: Necessário projetor HDMI e suporte para videoconferência..." class="booking-input min-h-[6rem] resize-y"></textarea>
                     </div>
                 </div>
 
@@ -229,16 +249,16 @@
                 <section class="glass-panel rounded-[2rem] p-5 sm:p-7">
                     <div class="flex items-center justify-between gap-3">
                         <div>
-                            <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-500">Agenda selecionada</p>
-                            <h2 class="mt-2 text-2xl font-semibold text-ink-900">{{ $recursoSelecionado?->nome ?? 'Selecione um recurso' }}</h2>
-                            <p class="mt-2 text-sm text-slate-500">{{ $hojeFormatado }}</p>
+                            <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-500 dark:text-sky-400">Agenda selecionada</p>
+                            <h2 class="mt-2 text-2xl font-semibold text-ink-900 dark:text-white">{{ $recursoSelecionado?->nome ?? 'Selecione um recurso' }}</h2>
+                            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">{{ $hojeFormatado }}</p>
                         </div>
-                        <div class="rounded-3xl bg-slate-100 px-4 py-3 text-center">
-                            <p class="text-xs uppercase tracking-[0.3em] text-slate-500">Bloqueios</p>
-                            <p class="mt-1 text-2xl font-semibold text-ink-900">{{ count($agenda) }}</p>
+                        <div class="rounded-3xl bg-sky-50 dark:bg-slate-800/80 border border-sky-100 dark:border-slate-700/50 px-4 py-3 text-center min-w-[5.5rem] transition-colors duration-300">
+                            <p class="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-sky-600 dark:text-sky-400">Bloqueios</p>
+                            <p class="mt-1 text-2xl font-bold text-brand-600 dark:text-sky-300">{{ count($agenda) }}</p>
                         </div>
                     </div>
-
+ 
                     <div class="mt-6 space-y-4">
                         @forelse ($agenda as $item)
                             <article class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -260,9 +280,11 @@
                                 </div>
                             </article>
                         @empty
-                            <div class="rounded-3xl border border-dashed border-slate-300 bg-white/70 p-8 text-center text-sm text-slate-500">
-                                <i class="fa-regular fa-calendar-xmark mb-3 text-2xl text-slate-400"></i>
-                                <p>Nenhuma reserva ativa para este recurso nesta data.</p>
+                            <div class="rounded-3xl border border-dashed border-sky-200 dark:border-slate-700/80 bg-sky-50/20 dark:bg-slate-900/40 p-8 text-center text-sm text-slate-500 dark:text-slate-400 transition-all duration-300">
+                                <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-sky-100/50 dark:bg-slate-800/60 text-sky-500 dark:text-sky-400">
+                                    <i class="fa-regular fa-calendar-xmark text-lg"></i>
+                                </div>
+                                <p class="font-medium">Nenhuma reserva ativa para este recurso nesta data.</p>
                             </div>
                         @endforelse
                     </div>
