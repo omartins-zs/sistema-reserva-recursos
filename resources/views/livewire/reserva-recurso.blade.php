@@ -1,5 +1,11 @@
 @php
     $recursoSelecionadoArray = collect($recursos)->firstWhere('id', $recursoId);
+    $horarios = [];
+    for ($h = 0; $h < 24; $h++) {
+        foreach (['00', '30'] as $m) {
+            $horarios[] = sprintf('%02d:%s', $h, $m);
+        }
+    }
 @endphp
 
 <div class="relative min-h-screen overflow-hidden page-wrapper">
@@ -147,31 +153,27 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="booking-label">Hora inicial</label>
-                            <div class="picker-shell">
-                                <input
-                                    wire:model="horaInicio"
-                                    data-picker="time"
-                                    data-placeholder="08:00"
-                                    type="text"
-                                    placeholder="08:00"
-                                    class="booking-input pr-11"
-                                >
-                                <i class="fa-regular fa-clock picker-icon"></i>
+                            <div class="relative">
+                                <select wire:model="horaInicio" class="booking-select">
+                                    <option value="">Selecione</option>
+                                    @foreach ($horarios as $hora)
+                                        <option value="{{ $hora }}">{{ $hora }}</option>
+                                    @endforeach
+                                </select>
+                                <i class="fa-solid fa-chevron-down picker-icon"></i>
                             </div>
                             @error('horaInicio') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label class="booking-label">Hora final</label>
-                            <div class="picker-shell">
-                                <input
-                                    wire:model="horaFim"
-                                    data-picker="time"
-                                    data-placeholder="09:00"
-                                    type="text"
-                                    placeholder="09:00"
-                                    class="booking-input pr-11"
-                                >
-                                <i class="fa-regular fa-clock picker-icon"></i>
+                            <div class="relative">
+                                <select wire:model="horaFim" class="booking-select">
+                                    <option value="">Selecione</option>
+                                    @foreach ($horarios as $hora)
+                                        <option value="{{ $hora }}">{{ $hora }}</option>
+                                    @endforeach
+                                </select>
+                                <i class="fa-solid fa-chevron-down picker-icon"></i>
                             </div>
                             @error('horaFim') <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                         </div>
