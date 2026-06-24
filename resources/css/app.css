@@ -303,3 +303,14 @@ html[data-theme-preference="dark"] #theme-btn-dark {
     color: #ffffff !important;
     font-weight: 600 !important;
 }
+
+/* Report Card & Progress Dark Mode Adjustments */
+.dark .report-card {
+    background-color: #0f172a !important;
+    border-color: #1e293b !important;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .soft-progress {
+    background-color: #1e293b !important;
+}
