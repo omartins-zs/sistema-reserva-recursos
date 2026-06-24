@@ -6,9 +6,16 @@ use App\Filament\Resources\Reservas\ReservaResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
+use Filament\Support\Enums\Width;
+
 class EditReserva extends EditRecord
 {
     protected static string $resource = ReservaResource::class;
+
+    public function getMaxContentWidth(): Width|string|null
+    {
+        return Width::Full;
+    }
 
     protected static ?string $title = 'Detalhes da reserva';
 
