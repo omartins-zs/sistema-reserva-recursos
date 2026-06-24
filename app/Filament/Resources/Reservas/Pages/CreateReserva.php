@@ -5,9 +5,16 @@ namespace App\Filament\Resources\Reservas\Pages;
 use App\Filament\Resources\Reservas\ReservaResource;
 use Filament\Resources\Pages\CreateRecord;
 
+use Filament\Support\Enums\Width;
+
 class CreateReserva extends CreateRecord
 {
     protected static string $resource = ReservaResource::class;
+
+    public function getMaxContentWidth(): Width|string|null
+    {
+        return Width::Full;
+    }
 
     protected static bool $canCreateAnother = false;
 
