@@ -19,6 +19,7 @@ class ReservaForm
             ->components([
                 Section::make('Reserva')
                     ->description('Use este formulario para ajustes internos, reservas assistidas e tratamento das aprovacoes.')
+                    ->disabled(fn (string $operation): bool => $operation !== 'create')
                     ->schema([
                         Select::make('recurso_id')
                             ->relationship('recurso', 'nome')

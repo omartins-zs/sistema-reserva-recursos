@@ -121,6 +121,18 @@ class MetricasReservaService
             ? $filtros['data_final']
             : ($ultimaData ?? $dataInicial);
 
-        return (int) Carbon::parse($dataInicial)->diffInDays(Carbon::parse($dataFinal)) + 1;
+        try {
+            $parsedInicial = Carbon::parse($dataInicial);
+        } catch (\Exception) {
+            $parsedInicial = now();
+        }
+
+        try {
+            $parsedFinal = Carbon::parse($dataFinal);
+        } catch (\Exception) {
+            $parsedFinal = $parsedInicial;
+        }
+
+        return (int) $parsedInicial->diffInDays($parsedFinal) + 1;
     }
 }

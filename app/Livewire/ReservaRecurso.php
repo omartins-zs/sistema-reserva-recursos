@@ -168,9 +168,18 @@ class ReservaRecurso extends Component
             ? Departamento::query()->with('gestor')->find($this->departamentoId)
             : null;
 
+        $hojeFormatado = $this->dataReserva;
+        if (filled($this->dataReserva)) {
+            try {
+                $hojeFormatado = Carbon::parse($this->dataReserva)->translatedFormat('d \\d\\e F \\d\\e Y');
+            } catch (\Exception) {
+                // Mantém a data bruta em caso de erro de parse enquanto o usuário digita
+            }
+        }
+
         return view('livewire.reserva-recurso', [
             'recursoSelecionado' => $recursoSelecionado,
-            'hojeFormatado' => Carbon::parse($this->dataReserva)->translatedFormat('d \\d\\e F \\d\\e Y'),
+            'hojeFormatado' => $hojeFormatado,
             'responsavelAprovacao' => app(FluxoAprovacaoReservaService::class)->responsavelPorDepartamento($departamentoSelecionado),
         ]);
     }
