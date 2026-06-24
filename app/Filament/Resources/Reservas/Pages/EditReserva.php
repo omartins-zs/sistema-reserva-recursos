@@ -21,16 +21,22 @@ class EditReserva extends EditRecord
 
     protected static ?string $breadcrumb = 'Detalhes';
 
-    protected function getSavedNotificationTitle(): ?string
-    {
-        return 'Reserva atualizada com sucesso.';
-    }
-
     protected function getHeaderActions(): array
     {
         return [
             DeleteAction::make()
                 ->label('Excluir reserva'),
+        ];
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getCancelFormAction()
+                ->label('Voltar')
+                ->color('gray')
+                ->button()
+                ->icon('heroicon-m-arrow-left'),
         ];
     }
 }
