@@ -46,7 +46,11 @@ window.toggleAppTheme = () => window.setAppTheme(resolveTheme() === 'dark' ? 'li
 window.getAppTheme = () => document.documentElement.dataset.theme ?? resolveTheme();
 
 const syncPickerValue = (element, value) => {
-    element.value = value ?? '';
+    const newValue = value ?? '';
+    if (element.value === newValue) {
+        return;
+    }
+    element.value = newValue;
     element.dispatchEvent(new Event('input', { bubbles: true }));
     element.dispatchEvent(new Event('change', { bubbles: true }));
 };
@@ -74,15 +78,22 @@ window.initLocalizedPicker = (element, options = {}) => {
     const currentValue = element.value || element.dataset.defaultValue || '';
 
     if (element._flatpickr) {
-        if (currentValue === '') {
-            element._flatpickr.clear(false);
-        } else if (element._flatpickr.input.value !== currentValue) {
-            element._flatpickr.setDate(currentValue, false, element._flatpickr.config.dateFormat);
+        const altInputDetached = element._flatpickr.altInput && !document.body.contains(element._flatpickr.altInput);
+        if (altInputDetached) {
+            const savedValue = currentValue;
+            element._flatpickr.destroy();
+            element.value = savedValue;
+        } else {
+            if (currentValue === '') {
+                element._flatpickr.clear(false);
+            } else if (element._flatpickr.input.value !== currentValue) {
+                element._flatpickr.setDate(currentValue, false, element._flatpickr.config.dateFormat);
+            }
+
+            applyAltInputStyling(element._flatpickr, placeholder);
+
+            return element._flatpickr;
         }
-
-        applyAltInputStyling(element._flatpickr, placeholder);
-
-        return element._flatpickr;
     }
 
     const config = {
